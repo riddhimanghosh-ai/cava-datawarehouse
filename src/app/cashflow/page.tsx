@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { AlertOctagon, Banknote, Calendar, Clock, ShieldAlert, Store } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, RingProgress, IconTile, ProgressBar, FilterRow, FilterBox, MultiSelect, passesFilter } from "@/components/ui";
+import { AlertOctagon, Banknote, Calendar, Clock, ShieldAlert, Store, Wallet } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, RingProgress, IconTile, ProgressBar, Tabs, FilterRow, FilterBox, MultiSelect, passesFilter } from "@/components/ui";
 import { formatINR, cx } from "@/lib/format";
 import { CASH_TREND, cashSummary, PAYABLES, PAYOUT_CYCLE_DAYS, CHANNEL_TAKE_RATE, RECEIVABLES, CHANNELS } from "@/lib/data";
 
@@ -11,8 +11,16 @@ const MONTH_RANGES = [
   { value: "3", label: "Last 3 months" },
 ];
 
+type Tab = "balance" | "payables" | "receivables";
+const TABS: { value: Tab; label: string; icon: React.ReactNode }[] = [
+  { value: "balance", label: "Cash Balance, Inflow & Outflow", icon: <Wallet size={15} /> },
+  { value: "payables", label: "Upcoming Payables", icon: <Banknote size={15} /> },
+  { value: "receivables", label: "Receivables", icon: <Clock size={15} /> },
+];
+
 export default function CashflowPage() {
   const summary = cashSummary();
+  const [tab, setTab] = useState<Tab>("balance");
   const [range, setRange] = useState("6");
   const [channels, setChannels] = useState<Set<string>>(new Set());
 
@@ -21,7 +29,10 @@ export default function CashflowPage() {
   const payoutChannels = CHANNELS.filter((c) => passesFilter(channels, c));
 
   return (
-    <div className="space-y-6">
+    <div>
+      <Tabs tabs={TABS} value={tab} onChange={setTab} />
+
+      <div className="space-y-6">
       <FilterRow>
         <FilterBox label="Date range" icon={<Calendar size={12} />} value={range} onChange={setRange} options={MONTH_RANGES} />
         <MultiSelect label="Channel" icon={<Store size={12} />} options={CHANNELS.map((c) => ({ value: c, label: c }))} selected={channels} onChange={setChannels} />
@@ -34,6 +45,7 @@ export default function CashflowPage() {
         <StatCard label="Runway at current burn" value={`${summary.runwayMonths.toFixed(1)} months`} tone={summary.runwayMonths > 6 ? "ok" : "danger"} />
       </div>
 
+      {tab === "balance" && (
       <Card>
         <CardHeader title="Cash balance, inflow & outflow" subtitle="Monthly — closing cash position with in/out breakdown" />
         <div className="overflow-x-auto -mx-5">
@@ -67,7 +79,9 @@ export default function CashflowPage() {
           </table>
         </div>
       </Card>
+      )}
 
+      {tab === "receivables" && (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader title="Channel payout cycles" subtitle="Days to receive settlement + marketplace commission" />
@@ -105,7 +119,9 @@ export default function CashflowPage() {
           </div>
         </Card>
       </div>
+      )}
 
+      {tab === "payables" && (
       <Card>
         <CardHeader title="Upcoming payables" subtitle="Prioritized by urgency" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
@@ -124,6 +140,7 @@ export default function CashflowPage() {
           ))}
         </div>
       </Card>
+      )}
 
       {summary.runwayMonths < 8 && (
         <Card className="border-[var(--warning)]/40 bg-[var(--warning)]/5">
@@ -138,6 +155,7 @@ export default function CashflowPage() {
           </div>
         </Card>
       )}
+      </div>
     </div>
   );
 }

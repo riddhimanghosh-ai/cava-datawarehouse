@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Card, CardHeader, StatCard, Pills, ProgressBar, Badge } from "@/components/ui";
+import { Card, CardHeader, StatCard, Pills, ProgressBar, Badge , DateRangeBar } from "@/components/ui";
 import { formatNumber } from "@/lib/format";
 import { SEARCH_TERMS, searchGapSummary } from "@/lib/data";
 
@@ -18,6 +18,7 @@ export default function SearchGapPage() {
 
   return (
     <div className="space-y-6">
+      <DateRangeBar />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6">
         <StatCard label="Total Searches" value={formatNumber(summary.totalSearches)} caption="in the selected period" />
         <StatCard label="Unique Terms" value={formatNumber(summary.uniqueTerms)} caption="distinct search queries" />

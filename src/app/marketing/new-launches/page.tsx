@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Layers, Sparkles, Store } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, MultiSelect, passesFilter, FilterRow, FilterBox, IconTile } from "@/components/ui";
+import { Card, CardHeader, StatCard, Badge, MultiSelect, passesFilter, FilterRow, FilterBox, IconTile , DateRangeBar } from "@/components/ui";
 import { formatINR } from "@/lib/format";
 import { allNewLaunches, COMPETITOR_STORES } from "@/lib/data";
 
@@ -24,6 +24,7 @@ export default function NewLaunchesPage() {
 
   return (
     <div className="space-y-6">
+      <DateRangeBar />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="New launches (last 7 days)" value={`${last7}`} tone="ok" />
         <StatCard label={`New launches (last ${horizon} days)`} value={`${allNewLaunches(Number(horizon)).length}`} />

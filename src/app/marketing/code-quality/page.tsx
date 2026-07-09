@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Card, Badge, ProgressBar } from "@/components/ui";
+import { Card, Badge, ProgressBar , DateRangeBar } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import { CODE_QUALITY, codeQualityCounts, CodeClass } from "@/lib/data";
 
@@ -33,6 +33,7 @@ export default function CodeQualityPage() {
 
   return (
     <div className="space-y-6">
+      <DateRangeBar />
       <div className="flex flex-wrap gap-2">
         {PILLS.map((p) => (
           <button

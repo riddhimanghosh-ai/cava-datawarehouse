@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { BarChart3, Users, Package, ShoppingBag, Filter as FunnelIcon, IndianRupee } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, Tabs, ProgressBar, LabelledBar } from "@/components/ui";
+import { Card, CardHeader, StatCard, Badge, Tabs, ProgressBar, LabelledBar , DateRangeBar } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import {
   SHOPIFY_OVERVIEW_KPIS,
@@ -35,6 +35,7 @@ export default function ShopifyAnalyticsPage() {
 
   return (
     <div>
+      <DateRangeBar />
       <Tabs tabs={TABS} value={tab} onChange={setTab} />
 
       {tab === "overview" && (

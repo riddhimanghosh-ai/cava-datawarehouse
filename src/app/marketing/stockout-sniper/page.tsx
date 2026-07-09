@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Layers, RefreshCw, Shirt, Store, Target } from "lucide-react";
-import { Card, MultiSelect, passesFilter, FilterRow } from "@/components/ui";
+import { Card, MultiSelect, passesFilter, FilterRow , DateRangeBar } from "@/components/ui";
 import { formatINR, cx } from "@/lib/format";
 import { allStockouts, COMPETITOR_STORES } from "@/lib/data";
 
@@ -21,6 +21,7 @@ export default function StockoutSniperPage() {
 
   return (
     <div className="space-y-6">
+      <DateRangeBar />
       <FilterRow>
         <MultiSelect label="Store" icon={<Store size={12} />} selected={store} onChange={setStore} options={COMPETITOR_STORES.map((s) => ({ value: s.name, label: s.name }))} />
         <MultiSelect label="Category" icon={<Layers size={12} />} selected={category} onChange={setCategory} options={categories.map((c) => ({ value: c, label: c }))} />

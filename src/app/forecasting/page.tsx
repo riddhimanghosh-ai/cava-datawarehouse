@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, Boxes, Calendar, Factory, Layers } from "lucide-react";
+import { AlertTriangle, Boxes, ChevronDown, ChevronRight, Factory, Layers } from "lucide-react";
 import { Card, CardHeader, StatCard, FilterBox, FilterRow, MultiSelect, passesFilter } from "@/components/ui";
 import { formatNumber, cx } from "@/lib/format";
-import { CHANNELS, Channel, DEMAND_PLANS, demandPlanFor, PRODUCTS } from "@/lib/data";
+import { CHANNELS, Channel, DEMAND_PLANS, DEMAND_PLAN_MONTHS, PRODUCTS } from "@/lib/data";
 
 const HORIZONS = [
   { value: "3", label: "3 months forecast" },
@@ -20,78 +20,84 @@ const ACTION_TONE_CLASSES: Record<string, string> = {
 export default function ForecastingPage() {
   const [horizon, setHorizon] = useState("6");
   const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
-  const [sku, setSku] = useState(DEMAND_PLANS[0].sku);
-  const [months, setMonths] = useState<Set<string>>(new Set());
+  const [skus, setSkus] = useState<Set<string>>(new Set());
   const [channels, setChannels] = useState<Set<Channel>>(new Set(CHANNELS));
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const categories = Array.from(new Set(PRODUCTS.map((p) => p.category)));
   const skuOptions = DEMAND_PLANS.filter((p) => passesFilter(categoryFilter, p.category));
 
-  const plan = demandPlanFor(sku);
-  const visibleMonths = useMemo(() => {
-    const rows = plan.months.slice(0, Number(horizon));
-    return months.size === 0 ? rows : rows.filter((r) => months.has(r.month));
-  }, [plan, horizon, months]);
+  // Selected plans: honour category + SKU multi-selects (empty = all).
+  const selectedPlans = useMemo(
+    () => skuOptions.filter((p) => passesFilter(skus, p.sku)),
+    [skuOptions, skus]
+  );
+  const selectedChannels = CHANNELS.filter((c) => channels.has(c));
+  const monthLabels = DEMAND_PLAN_MONTHS.slice(0, Number(horizon));
 
   const toggleChannel = (c: Channel) => {
     setChannels((prev) => {
       const next = new Set(prev);
       next.has(c) ? next.delete(c) : next.add(c);
-      return next.size ? next : prev; // keep at least one selected
+      return next.size ? next : prev;
+    });
+  };
+  const toggleMonth = (m: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(m) ? next.delete(m) : next.add(m);
+      return next;
     });
   };
 
-  const atRiskCount = plan.months.filter((m) => m.action.tone !== "ok").length;
-  const overCapacityCount = DEMAND_PLANS.reduce((s, p) => s + p.months.filter((m) => m.action.tone === "danger").length, 0);
+  const chanTotal = (byChannel: Record<Channel, number>) => selectedChannels.reduce((s, c) => s + byChannel[c], 0);
+
+  // Aggregate the selected SKUs for one month label.
+  const aggregateMonth = (label: string) => {
+    const rows = selectedPlans.map((p) => ({ plan: p, m: p.months.find((mm) => mm.month === label)! })).filter((r) => r.m);
+    const totalDemand = rows.reduce((s, r) => s + chanTotal(r.m.byChannel), 0);
+    const inStock = rows.reduce((s, r) => s + r.m.inStock, 0);
+    const needToProduce = rows.reduce((s, r) => s + r.m.needToProduce, 0);
+    const byChannel = Object.fromEntries(selectedChannels.map((c) => [c, rows.reduce((s, r) => s + r.m.byChannel[c], 0)])) as Record<Channel, number>;
+    const atRisk = rows.filter((r) => r.m.action.tone !== "ok").length;
+    const worstTone = rows.some((r) => r.m.action.tone === "danger") ? "danger" : rows.some((r) => r.m.action.tone === "warning") ? "warning" : "ok";
+    return { rows, totalDemand, inStock, needToProduce, byChannel, atRisk, worstTone };
+  };
+
+  const overCapacityCount = selectedPlans.reduce((s, p) => s + p.months.slice(0, Number(horizon)).filter((m) => m.action.tone === "danger").length, 0);
+  const totalCapacity = selectedPlans.reduce((s, p) => s + p.monthlyCapacity, 0);
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="SKUs tracked" value={`${DEMAND_PLANS.length}`} />
-        <StatCard label={`${plan.name.split(" – ")[0]} — months at/over capacity`} value={`${atRiskCount} of ${plan.months.length}`} tone={atRiskCount > 0 ? "danger" : "ok"} />
-        <StatCard label="Over-capacity SKU-months (all SKUs)" value={`${overCapacityCount}`} tone={overCapacityCount > 0 ? "danger" : "ok"} />
-        <StatCard label="Monthly production capacity" value={`${formatNumber(plan.monthlyCapacity)} units`} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
+        <StatCard label="SKUs in view" value={`${selectedPlans.length} of ${DEMAND_PLANS.length}`} />
+        <StatCard label="Channels selected" value={`${selectedChannels.length} of ${CHANNELS.length}`} />
+        <StatCard label="Over-capacity SKU-months" value={`${overCapacityCount}`} tone={overCapacityCount > 0 ? "danger" : "ok"} />
+        <StatCard label="Combined monthly capacity" value={`${formatNumber(totalCapacity)} units`} />
       </div>
 
       <Card>
         <FilterRow>
-          <FilterBox
-            label="Forecast Horizon"
-            icon={<Layers size={12} />}
-            value={horizon}
-            onChange={setHorizon}
-            options={HORIZONS}
-          />
+          <FilterBox label="Forecast Horizon" icon={<Layers size={12} />} value={horizon} onChange={setHorizon} options={HORIZONS} />
           <MultiSelect
             label="Category"
             icon={<Layers size={12} />}
             selected={categoryFilter}
-            onChange={(n) => {
-              setCategoryFilter(n);
-              const opts = DEMAND_PLANS.filter((p) => passesFilter(n, p.category));
-              if (opts.length && !opts.some((p) => p.sku === sku)) setSku(opts[0].sku);
-            }}
+            onChange={(n) => { setCategoryFilter(n); setSkus(new Set()); }}
             options={categories.map((c) => ({ value: c, label: c }))}
           />
-          <FilterBox
-            label="SKU"
-            icon={<Boxes size={12} />}
-            value={sku}
-            onChange={setSku}
-            options={skuOptions.map((p) => ({ value: p.sku, label: p.name }))}
-          />
           <MultiSelect
-            label="Month"
-            icon={<Calendar size={12} />}
-            selected={months}
-            onChange={setMonths}
-            options={plan.months.slice(0, Number(horizon)).map((m) => ({ value: m.month, label: m.month }))}
+            label="SKU Name"
+            icon={<Boxes size={12} />}
+            selected={skus}
+            onChange={setSkus}
+            options={skuOptions.map((p) => ({ value: p.sku, label: p.name }))}
           />
         </FilterRow>
 
         <CardHeader
           title="Demand Plan by Channel"
-          subtitle={`SKU: ${plan.name} · Channels: ${CHANNELS.filter((c) => channels.has(c)).join(", ")} · Capacity: ${formatNumber(plan.monthlyCapacity)} units/mo`}
+          subtitle={`${selectedPlans.length} SKU${selectedPlans.length === 1 ? "" : "s"} · ${selectedChannels.join(", ")} · click a month to see the per-SKU split`}
         />
         <div className="flex flex-wrap gap-1.5 mb-4">
           {CHANNELS.map((c) => (
@@ -99,10 +105,8 @@ export default function ForecastingPage() {
               key={c}
               onClick={() => toggleChannel(c)}
               className={cx(
-                "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
-                channels.has(c)
-                  ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                  : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
+                "px-3 py-1 text-xs font-medium border transition-colors",
+                channels.has(c) ? "bg-[var(--accent)] text-white border-[var(--accent)]" : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
               )}
             >
               {c}
@@ -114,35 +118,22 @@ export default function ForecastingPage() {
           <table className="w-full text-sm min-w-[1100px]">
             <thead>
               <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)] uppercase tracking-wide">
-                <th className="py-2 px-5 font-medium">Month</th>
-                <th className="py-2 px-2 font-medium">Total demand</th>
-                <th className="py-2 px-2 font-medium">In stock</th>
-                <th className="py-2 px-2 font-medium">Need to produce</th>
-                {CHANNELS.filter((c) => channels.has(c)).map((c) => (
-                  <th key={c} className="py-2 px-2 font-medium">{c}</th>
+                <th className="py-2 px-5 font-medium">Month / SKU</th>
+                <th className="py-2 px-2 font-medium text-right">Total demand</th>
+                <th className="py-2 px-2 font-medium text-right">In stock</th>
+                <th className="py-2 px-2 font-medium text-right">Need to produce</th>
+                {selectedChannels.map((c) => (
+                  <th key={c} className="py-2 px-2 font-medium text-right">{c}</th>
                 ))}
                 <th className="py-2 px-5 font-medium">Planner action</th>
               </tr>
             </thead>
             <tbody>
-              {visibleMonths.map((m) => {
-                const selectedTotal = CHANNELS.filter((c) => channels.has(c)).reduce((s, c) => s + m.byChannel[c], 0);
+              {monthLabels.map((label) => {
+                const agg = aggregateMonth(label);
+                const open = expanded.has(label);
                 return (
-                  <tr key={m.month} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
-                    <td className="py-2.5 px-5 font-semibold">{m.month}</td>
-                    <td className="py-2.5 px-2 font-medium">{formatNumber(selectedTotal)}</td>
-                    <td className="py-2.5 px-2 text-[var(--muted)]">{formatNumber(m.inStock)}</td>
-                    <td className="py-2.5 px-2 font-medium">{formatNumber(m.needToProduce)}</td>
-                    {CHANNELS.filter((c) => channels.has(c)).map((c) => (
-                      <td key={c} className="py-2.5 px-2 text-[var(--muted)]">{formatNumber(m.byChannel[c])}</td>
-                    ))}
-                    <td className="py-2.5 px-5">
-                      <span className={cx("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium whitespace-nowrap", ACTION_TONE_CLASSES[m.action.tone])}>
-                        {m.action.tone !== "ok" && <AlertTriangle size={11} />}
-                        {m.action.label}
-                      </span>
-                    </td>
-                  </tr>
+                  <MonthRows key={label} label={label} agg={agg} open={open} onToggle={() => toggleMonth(label)} selectedChannels={selectedChannels} chanTotal={chanTotal} />
                 );
               })}
             </tbody>
@@ -194,5 +185,74 @@ export default function ForecastingPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+type Agg = {
+  rows: { plan: (typeof DEMAND_PLANS)[number]; m: (typeof DEMAND_PLANS)[number]["months"][number] }[];
+  totalDemand: number;
+  inStock: number;
+  needToProduce: number;
+  byChannel: Record<Channel, number>;
+  atRisk: number;
+  worstTone: string;
+};
+
+function MonthRows({
+  label,
+  agg,
+  open,
+  onToggle,
+  selectedChannels,
+  chanTotal,
+}: {
+  label: string;
+  agg: Agg;
+  open: boolean;
+  onToggle: () => void;
+  selectedChannels: Channel[];
+  chanTotal: (byChannel: Record<Channel, number>) => number;
+}) {
+  return (
+    <>
+      <tr className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60 cursor-pointer" onClick={onToggle}>
+        <td className="py-2.5 px-5 font-semibold">
+          <span className="flex items-center gap-1.5">
+            {open ? <ChevronDown size={14} className="text-[var(--muted)]" /> : <ChevronRight size={14} className="text-[var(--muted)]" />}
+            {label}
+            <span className="text-[11px] font-normal text-[var(--muted)]">({agg.rows.length} SKU{agg.rows.length === 1 ? "" : "s"})</span>
+          </span>
+        </td>
+        <td className="py-2.5 px-2 text-right font-medium">{formatNumber(agg.totalDemand)}</td>
+        <td className="py-2.5 px-2 text-right text-[var(--muted)]">{formatNumber(agg.inStock)}</td>
+        <td className="py-2.5 px-2 text-right font-medium">{formatNumber(agg.needToProduce)}</td>
+        {selectedChannels.map((c) => (
+          <td key={c} className="py-2.5 px-2 text-right text-[var(--muted)]">{formatNumber(agg.byChannel[c])}</td>
+        ))}
+        <td className="py-2.5 px-5">
+          <span className={cx("inline-flex items-center gap-1.5 border px-2.5 py-1 text-[11px] font-medium whitespace-nowrap", ACTION_TONE_CLASSES[agg.worstTone])}>
+            {agg.worstTone !== "ok" && <AlertTriangle size={11} />}
+            {agg.atRisk > 0 ? `${agg.atRisk} SKU${agg.atRisk === 1 ? "" : "s"} at/over capacity` : "All on track"}
+          </span>
+        </td>
+      </tr>
+      {open &&
+        agg.rows.map(({ plan, m }) => (
+          <tr key={`${label}-${plan.sku}`} className="border-b border-[var(--border)]/40 bg-[var(--surface-2)]/40">
+            <td className="py-2 px-5 pl-11 text-[var(--muted)]">{plan.name}</td>
+            <td className="py-2 px-2 text-right">{formatNumber(chanTotal(m.byChannel))}</td>
+            <td className="py-2 px-2 text-right text-[var(--muted)]">{formatNumber(m.inStock)}</td>
+            <td className="py-2 px-2 text-right">{formatNumber(m.needToProduce)}</td>
+            {selectedChannels.map((c) => (
+              <td key={c} className="py-2 px-2 text-right text-[var(--muted)]">{formatNumber(m.byChannel[c])}</td>
+            ))}
+            <td className="py-2 px-5">
+              <span className={cx("inline-flex items-center gap-1.5 border px-2 py-0.5 text-[10px] font-medium whitespace-nowrap", ACTION_TONE_CLASSES[m.action.tone])}>
+                {m.action.label}
+              </span>
+            </td>
+          </tr>
+        ))}
+    </>
   );
 }

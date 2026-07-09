@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AlertTriangle, BarChart3 } from "lucide-react";
-import { Card, CardHeader, StatCard, Tabs, ProgressBar, LabelledBar } from "@/components/ui";
+import { Card, CardHeader, StatCard, Tabs, ProgressBar, LabelledBar , DateRangeBar } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import {
   META_KPIS,
@@ -37,6 +37,7 @@ export default function MetaAdsPage() {
   const [tab, setTab] = useState<Tab>("meta");
   return (
     <div>
+      <DateRangeBar />
       <Tabs tabs={TABS} value={tab} onChange={setTab} />
       {tab === "meta" ? <MetaAds /> : <GoogleAds />}
     </div>

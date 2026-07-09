@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { RefreshCw, Sparkles, RotateCw, ArrowDown, ArrowUp, PackageX } from "lucide-react";
-import { Card, StatCard, Badge, IconTile } from "@/components/ui";
+import { Card, StatCard, Badge, IconTile , DateRangeBar } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import { COMPETITOR_STORES, CompetitorStore, RecentChange, storeStats } from "@/lib/data";
 
@@ -21,6 +21,7 @@ export default function PriceTrackerPage() {
 
   return (
     <div className="space-y-6">
+      <DateRangeBar />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Competitor stores tracked" value={`${COMPETITOR_STORES.length}`} />
         <StatCard label="Products in watch list" value={formatNumber(totalTracked)} />

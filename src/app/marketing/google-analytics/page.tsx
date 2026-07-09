@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { BarChart3, Users, Globe, MousePointerClick, Target } from "lucide-react";
-import { Card, CardHeader, StatCard, Tabs, ProgressBar, LabelledBar } from "@/components/ui";
+import { Card, CardHeader, StatCard, Tabs, ProgressBar, LabelledBar , DateRangeBar } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import {
   GA_TRAFFIC_KPIS,
@@ -33,6 +33,7 @@ export default function GoogleAnalyticsPage() {
 
   return (
     <div>
+      <DateRangeBar />
       <Tabs tabs={TABS} value={tab} onChange={setTab} />
 
       {tab === "overview" && (

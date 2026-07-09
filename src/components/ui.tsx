@@ -1,7 +1,7 @@
 "use client";
 
 import { cx } from "@/lib/format";
-import { ArrowDownRight, ArrowUpRight, Check, ChevronDown } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Calendar, Check, ChevronDown } from "lucide-react";
 import { ReactNode, useState } from "react";
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
@@ -238,6 +238,65 @@ export function FilterBox({
 
 export function FilterRow({ children }: { children: ReactNode }) {
   return <div className="flex flex-wrap items-stretch gap-3 mb-6">{children}</div>;
+}
+
+// Date-range filter: Last 7 / 30 / 90 days presets + a custom from/to picker.
+// Self-contained; anchored to a fixed "today" so the prototype stays stable.
+const RANGE_TODAY = "2026-07-09";
+
+function isoDaysAgo(days: number): string {
+  const d = new Date(RANGE_TODAY + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() - days);
+  return d.toISOString().slice(0, 10);
+}
+
+export function DateRangeBar() {
+  const PRESETS = [
+    { value: "7", label: "Last 7 days" },
+    { value: "30", label: "Last 30 days" },
+    { value: "90", label: "Last 90 days" },
+    { value: "custom", label: "Custom" },
+  ];
+  const [preset, setPreset] = useState("30");
+  const [from, setFrom] = useState(isoDaysAgo(30));
+  const [to, setTo] = useState(RANGE_TODAY);
+
+  const effectiveFrom = preset === "custom" ? from : isoDaysAgo(Number(preset));
+  const effectiveTo = preset === "custom" ? to : RANGE_TODAY;
+  const fmt = (s: string) => new Date(s + "T00:00:00Z").toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" });
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div className="flex items-center gap-0 border border-[var(--border)] w-fit">
+        {PRESETS.map((p, i) => (
+          <button
+            key={p.value}
+            onClick={() => setPreset(p.value)}
+            className={cx(
+              "px-3 py-1.5 text-xs font-medium transition-colors",
+              i > 0 && "border-l border-[var(--border)]",
+              preset === p.value ? "bg-[var(--accent)] text-white" : "text-[var(--muted)] hover:text-[var(--foreground)]"
+            )}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {preset === "custom" ? (
+        <div className="flex items-center gap-2 text-xs">
+          <input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} className="border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 outline-none focus:border-[var(--accent)]/50" />
+          <span className="text-[var(--muted)]">to</span>
+          <input type="date" value={to} min={from} max={RANGE_TODAY} onChange={(e) => setTo(e.target.value)} className="border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 outline-none focus:border-[var(--accent)]/50" />
+        </div>
+      ) : (
+        <div className="flex items-center gap-1.5 border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--muted)]">
+          <Calendar size={13} strokeWidth={1.5} />
+          {fmt(effectiveFrom)} — {fmt(effectiveTo)}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Multi-select checkbox dropdown. `selected` is the set of chosen values;

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { MessageSquare, Megaphone, ShoppingCart, Clock } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, IconTile, Pills, MultiSelect, passesFilter, FilterRow } from "@/components/ui";
+import { Card, CardHeader, StatCard, Badge, IconTile, Pills, MultiSelect, passesFilter, FilterRow , DateRangeBar } from "@/components/ui";
 import { cx } from "@/lib/format";
 import { SOCIAL_ADS, SOCIAL_COMMENTS, SocialComment, commentsSummary } from "@/lib/data";
 
@@ -33,6 +33,7 @@ export default function SocialCommentsPage() {
 
   return (
     <div className="space-y-6">
+      <DateRangeBar />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Positive comments" value={`${summary.positive}`} tone="ok" />
         <StatCard label="Negative comments" value={`${summary.negative}`} tone="danger" />

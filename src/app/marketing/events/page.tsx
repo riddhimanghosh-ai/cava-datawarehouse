@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { BarChart3, CalendarClock, ChevronDown, Plus, Target, TrendingUp, Trophy, X } from "lucide-react";
-import { Card, CardHeader, Badge, ProgressBar } from "@/components/ui";
+import { Card, CardHeader, Badge, ProgressBar , DateRangeBar } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import { BRAND_EVENTS, BrandEvent, EventType, eventDurationDays, eventLiftPct, eventMetrics, eventTargetPct } from "@/lib/data";
 
@@ -61,6 +61,7 @@ export default function EventsPage() {
 
   return (
     <div className="space-y-6">
+      <DateRangeBar />
       {/* Timeline */}
       <Card>
         <div className="text-[11px] uppercase tracking-wider text-[var(--muted)] font-semibold mb-4">

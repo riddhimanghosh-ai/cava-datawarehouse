@@ -51,7 +51,7 @@ for (const product of PRODUCTS) {
     const isHeroRunner = ["CV-LEG-HG-BLK", "CV-BRA-CB-BLK", "CV-BRA-HM-WNE"].includes(product.sku);
     const isOverbought = ["CV-TEE-SU-PNE", "CV-SKT-PLE-BLK", "CV-JOG-EW-NVY"].includes(product.sku);
 
-    const baseVelocity = channel === "Shopify D2C" ? rng.range(9, 22) : channel === "Amazon" ? rng.range(6, 16) : channel === "Myntra" ? rng.range(5, 13) : channel === "Zepto" ? rng.range(3, 9) : rng.range(2, 7);
+    const baseVelocity = channel === "Shopify D2C" ? rng.range(3, 8) : channel === "Amazon" ? rng.range(2, 5.5) : channel === "Myntra" ? rng.range(1.5, 4.5) : channel === "Zepto" ? rng.range(1, 3) : rng.range(0.8, 2.5);
     const avgDailySales = Math.round((isHeroRunner ? baseVelocity * 1.9 : isOverbought ? baseVelocity * 0.55 : baseVelocity) * 10) / 10;
 
     let daysOfCover: number;

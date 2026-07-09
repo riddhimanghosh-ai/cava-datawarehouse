@@ -6,13 +6,13 @@ const rng = seededRandom(4478);
 export const DEMAND_PLAN_MONTHS = ["Jul'26", "Aug'26", "Sep'26", "Oct'26", "Nov'26", "Dec'26"];
 
 const MONTHLY_CAPACITY_BY_CATEGORY: Record<Category, number> = {
-  Leggings: 6000,
-  "Sports Bra": 5000,
-  Joggers: 3500,
-  "T-Shirts": 7000,
-  "Skorts": 2500,
-  "Flare Pants": 4000,
-  Jacket: 1200,
+  Leggings: 600,
+  "Sports Bra": 500,
+  Joggers: 350,
+  "T-Shirts": 700,
+  "Skorts": 250,
+  "Flare Pants": 400,
+  Jacket: 120,
 };
 
 const CHANNEL_WEIGHT: Record<Channel, number> = {

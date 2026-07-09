@@ -27,10 +27,13 @@ const ACTION_TONE_CLASSES: Record<string, string> = {
   danger: "bg-[var(--danger)]/10 text-[var(--danger)] border-[var(--danger)]/30",
 };
 
-type Tab = "plan" | "actions";
+type Tab = "plan" | "winners" | "whitespace" | "alignment" | "geo";
 const TABS: { value: Tab; label: string; icon: React.ReactNode }[] = [
   { value: "plan", label: "Demand Plan", icon: <Table size={15} /> },
-  { value: "actions", label: "Planner Actions", icon: <ClipboardList size={15} /> },
+  { value: "winners", label: "Understocked Winners", icon: <TrendingUp size={15} /> },
+  { value: "whitespace", label: "Channel White Space", icon: <Store size={15} /> },
+  { value: "alignment", label: "Marketing \u2194 Stock", icon: <Megaphone size={15} /> },
+  { value: "geo", label: "Geo Pockets", icon: <MapPin size={15} /> },
 ];
 
 export default function ForecastingPage() {
@@ -175,8 +178,7 @@ export default function ForecastingPage() {
       </Card>
       )}
 
-      {tab === "actions" && (
-      <>
+      {tab === "winners" && (
       <Card>
         <CardHeader
           title="Understocked winners"
@@ -207,7 +209,9 @@ export default function ForecastingPage() {
           </div>
         )}
       </Card>
+      )}
 
+      {tab === "whitespace" && (
       <Card>
         <CardHeader
           title="Channel white space"
@@ -237,7 +241,9 @@ export default function ForecastingPage() {
           </div>
         )}
       </Card>
+      )}
 
+      {tab === "alignment" && (
       <Card>
         <CardHeader
           title="Marketing ↔ stock alignment"
@@ -269,7 +275,9 @@ export default function ForecastingPage() {
           </div>
         )}
       </Card>
+      )}
 
+      {tab === "geo" && (
       <Card>
         <CardHeader
           title="Geo pockets"
@@ -295,7 +303,6 @@ export default function ForecastingPage() {
           ))}
         </div>
       </Card>
-      </>
       )}
       </div>
     </div>

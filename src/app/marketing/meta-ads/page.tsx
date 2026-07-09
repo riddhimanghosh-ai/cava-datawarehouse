@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AlertTriangle, BarChart3 } from "lucide-react";
-import { Card, CardHeader, StatCard, Tabs, ProgressBar, LabelledBar , DateRangeBar } from "@/components/ui";
+import { Card, CardHeader, StatCard, Tabs, Pills, ProgressBar, LabelledBar, DateRangeBar } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import {
   META_KPIS,
@@ -20,10 +20,17 @@ import {
 } from "@/lib/data";
 
 type Tab = "meta" | "google";
+type Sub = "overview" | "funnel" | "breakdown";
 
 const TABS: { value: Tab; label: string; icon: React.ReactNode }[] = [
   { value: "meta", label: "Meta Ads", icon: <BarChart3 size={15} /> },
   { value: "google", label: "Google Ads", icon: <BarChart3 size={15} /> },
+];
+
+const SUB_TABS: { value: Sub; label: string }[] = [
+  { value: "overview", label: "Overview" },
+  { value: "funnel", label: "Conversion Funnel" },
+  { value: "breakdown", label: "Performance Breakdown" },
 ];
 
 // ROAS band → doctrine tone for spend bars.
@@ -35,11 +42,15 @@ function roasTone(roas: number): "ok" | "warning" | "danger" {
 
 export default function MetaAdsPage() {
   const [tab, setTab] = useState<Tab>("meta");
+  const [sub, setSub] = useState<Sub>("overview");
   return (
     <div>
       <DateRangeBar />
       <Tabs tabs={TABS} value={tab} onChange={setTab} />
-      {tab === "meta" ? <MetaAds /> : <GoogleAds />}
+      <div className="mb-6">
+        <Pills options={SUB_TABS} value={sub} onChange={setSub} />
+      </div>
+      {tab === "meta" ? <MetaAds sub={sub} /> : <GoogleAds sub={sub} />}
     </div>
   );
 }
@@ -62,29 +73,80 @@ function SpendBars({ rows }: { rows: MetaBar[] }) {
   );
 }
 
-function MetaAds() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
-        {META_KPIS.map((k) => (
-          <StatCard key={k.label} {...k} />
-        ))}
-      </div>
-
-      <Card className="border-[var(--danger)]/40 bg-[var(--danger)]/[0.05]">
-        <div className="flex items-start gap-3">
-          <div className="h-9 w-9 border border-[var(--danger)]/40 text-[var(--danger)] flex items-center justify-center shrink-0">
-            <AlertTriangle size={18} strokeWidth={1.5} />
-          </div>
-          <div className="text-sm">
-            <div className="font-medium mb-0.5">ROAS below 1x — spending more than earning</div>
-            <p className="text-[var(--muted)] text-xs">
-              Meta attributes ₹0.76 in purchase revenue per ₹1 spent. Check the campaign breakdown below — pause the underperformers and shift budget to the ROAS &gt; 1x campaigns (PW-MOF-BAU at 3.71x, CV_DCO_June at 1.46x).
-            </p>
-          </div>
+function MetaAds({ sub }: { sub: Sub }) {
+  if (sub === "overview") {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
+          {META_KPIS.map((k) => (
+            <StatCard key={k.label} {...k} />
+          ))}
         </div>
-      </Card>
 
+        <Card className="border-[var(--danger)]/40 bg-[var(--danger)]/[0.05]">
+          <div className="flex items-start gap-3">
+            <div className="h-9 w-9 border border-[var(--danger)]/40 text-[var(--danger)] flex items-center justify-center shrink-0">
+              <AlertTriangle size={18} strokeWidth={1.5} />
+            </div>
+            <div className="text-sm">
+              <div className="font-medium mb-0.5">ROAS below 1x — spending more than earning</div>
+              <p className="text-[var(--muted)] text-xs">
+                Meta attributes ₹0.76 in purchase revenue per ₹1 spent. Check the Performance Breakdown tab — pause the underperformers and shift budget to the ROAS &gt; 1x campaigns (PW-MOF-BAU at 3.71x, CV_DCO_June at 1.46x).
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader title="Age × gender" subtitle="Spend distribution by demographic — coloured by ROAS" />
+            <SpendBars rows={META_AGE_GENDER} />
+          </Card>
+          <Card>
+            <CardHeader title="Placement mix" subtitle="Spend share across FB / IG · feed / stories / reels" />
+            <div className="space-y-3">
+              {META_PLACEMENT_MIX.map((p) => (
+                <LabelledBar key={p.label} label={p.label} value={`${p.pct}%`} pct={p.pct} />
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader title="Devices" subtitle="Spend by device — iPhone, Android, desktop" />
+            <SpendBars rows={META_DEVICES} />
+          </Card>
+          <Card>
+            <CardHeader title="Placement performance" subtitle="Where your spend converts best" />
+            <SpendBars rows={META_PLACEMENT_PERF} />
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader title="Top countries" subtitle="Spend distribution by country — coloured by ROAS" />
+            <SpendBars rows={META_COUNTRIES} />
+          </Card>
+          <Card>
+            <CardHeader title="Reach & frequency" subtitle="How many unique people saw your ads and how often" />
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <Metric label="Unique reach" value={META_REACH_FREQ.uniqueReach} />
+              <Metric label="Impressions" value={META_REACH_FREQ.impressions} />
+              <Metric label="CPM" value={META_REACH_FREQ.cpm} />
+            </div>
+            <LabelledBar label={`Avg frequency — ${META_REACH_FREQ.avgFrequency}x (healthy)`} value={`${META_REACH_FREQ.avgFrequency}x`} pct={(META_REACH_FREQ.avgFrequency / 5) * 100} tone="ok" />
+            <div className="mt-4">
+              <LabelledBar label="Video completion rate" value={`${META_REACH_FREQ.videoCompletionPct}%`} pct={META_REACH_FREQ.videoCompletionPct} />
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (sub === "funnel") {
+    return (
       <Card>
         <CardHeader title="Conversion funnel" subtitle="From impression to purchase — with drop-off at each step" />
         <div className="space-y-3">
@@ -105,54 +167,13 @@ function MetaAds() {
           ))}
         </div>
       </Card>
+    );
+  }
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader title="Age × gender" subtitle="Spend distribution by demographic — coloured by ROAS" />
-          <SpendBars rows={META_AGE_GENDER} />
-        </Card>
-        <Card>
-          <CardHeader title="Placement mix" subtitle="Spend share across FB / IG · feed / stories / reels" />
-          <div className="space-y-3">
-            {META_PLACEMENT_MIX.map((p) => (
-              <LabelledBar key={p.label} label={p.label} value={`${p.pct}%`} pct={p.pct} />
-            ))}
-          </div>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader title="Devices" subtitle="Spend by device — iPhone, Android, desktop" />
-          <SpendBars rows={META_DEVICES} />
-        </Card>
-        <Card>
-          <CardHeader title="Placement performance" subtitle="Where your spend converts best" />
-          <SpendBars rows={META_PLACEMENT_PERF} />
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader title="Top countries" subtitle="Spend distribution by country — coloured by ROAS" />
-          <SpendBars rows={META_COUNTRIES} />
-        </Card>
-        <Card>
-          <CardHeader title="Reach & frequency" subtitle="How many unique people saw your ads and how often" />
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            <Metric label="Unique reach" value={META_REACH_FREQ.uniqueReach} />
-            <Metric label="Impressions" value={META_REACH_FREQ.impressions} />
-            <Metric label="CPM" value={META_REACH_FREQ.cpm} />
-          </div>
-          <LabelledBar label={`Avg frequency — ${META_REACH_FREQ.avgFrequency}x (healthy)`} value={`${META_REACH_FREQ.avgFrequency}x`} pct={(META_REACH_FREQ.avgFrequency / 5) * 100} tone="ok" />
-          <div className="mt-4">
-            <LabelledBar label="Video completion rate" value={`${META_REACH_FREQ.videoCompletionPct}%`} pct={META_REACH_FREQ.videoCompletionPct} />
-          </div>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader title="Performance breakdown" subtitle="Campaign-level spend, funnel & ROAS" />
+  // Performance breakdown
+  return (
+    <Card>
+      <CardHeader title="Performance breakdown" subtitle="Campaign-level spend, funnel & ROAS" />
         <div className="overflow-x-auto -mx-5">
           <table className="w-full text-sm min-w-[1080px]">
             <thead>
@@ -189,36 +210,70 @@ function MetaAds() {
             </tbody>
           </table>
         </div>
-      </Card>
-    </div>
+    </Card>
   );
 }
 
-function GoogleAds() {
-  const maxSpend = Math.max(...GOOGLE_ADS_CAMPAIGNS.map((c) => c.spend));
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-x-8 gap-y-6">
-        {GOOGLE_ADS_KPIS.map((k) => (
-          <StatCard key={k.label} {...k} />
-        ))}
-      </div>
+const GOOGLE_FUNNEL = [
+  { stage: "Impressions", count: 3000000, pct: 100 },
+  { stage: "Clicks", count: 35800, pct: 1.19 },
+  { stage: "Conversions", count: 393, pct: 0.013 },
+];
 
+function GoogleAds({ sub }: { sub: Sub }) {
+  const maxSpend = Math.max(...GOOGLE_ADS_CAMPAIGNS.map((c) => c.spend));
+
+  if (sub === "overview") {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-x-8 gap-y-6">
+          {GOOGLE_ADS_KPIS.map((k) => (
+            <StatCard key={k.label} {...k} />
+          ))}
+        </div>
+
+        <Card>
+          <CardHeader title="Spend by campaign" subtitle="Daily Google Ads spend concentrated in the top PMax & Brand-Search campaigns" />
+          <div className="space-y-3">
+            {[...GOOGLE_ADS_CAMPAIGNS].sort((a, b) => b.spend - a.spend).map((c) => (
+              <LabelledBar
+                key={c.campaign}
+                label={c.campaign}
+                value={`${formatINR(c.spend, true)} · ${c.roas.toFixed(2)}x`}
+                pct={(c.spend / maxSpend) * 100}
+                tone={c.roas >= 1.5 ? "ok" : c.roas >= 1 ? "warning" : "danger"}
+              />
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (sub === "funnel") {
+    return (
       <Card>
-        <CardHeader title="Spend by campaign" subtitle="Daily Google Ads spend concentrated in the top PMax & Brand-Search campaigns" />
+        <CardHeader title="Conversion funnel" subtitle="Impressions → clicks → conversions across all Google campaigns" />
         <div className="space-y-3">
-          {[...GOOGLE_ADS_CAMPAIGNS].sort((a, b) => b.spend - a.spend).map((c) => (
-            <LabelledBar
-              key={c.campaign}
-              label={c.campaign}
-              value={`${formatINR(c.spend, true)} · ${c.roas.toFixed(2)}x`}
-              pct={(c.spend / maxSpend) * 100}
-              tone={c.roas >= 1.5 ? "ok" : c.roas >= 1 ? "warning" : "danger"}
-            />
+          {GOOGLE_FUNNEL.map((s, i) => (
+            <div key={s.stage}>
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="flex items-center gap-2">
+                  <span className="h-5 w-5 rounded-full bg-[var(--accent)] text-white text-[11px] font-bold flex items-center justify-center">{i + 1}</span>
+                  {s.stage}
+                </span>
+                <span className="text-[var(--muted)]">{formatNumber(s.count)} · {s.pct}% of impressions</span>
+              </div>
+              <ProgressBar pct={Math.max(0.4, s.pct)} tone={i === GOOGLE_FUNNEL.length - 1 ? "ok" : "accent"} />
+            </div>
           ))}
         </div>
       </Card>
+    );
+  }
 
+  // Performance breakdown
+  return (
       <Card>
         <CardHeader title="Campaign performance" subtitle="Status, spend, funnel & return by campaign" />
         <div className="overflow-x-auto -mx-5">
@@ -258,7 +313,6 @@ function GoogleAds() {
           </table>
         </div>
       </Card>
-    </div>
   );
 }
 

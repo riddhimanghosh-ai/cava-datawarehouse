@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CAVA Data Warehouse — Architecture</title>
+<title>CAVA Data Warehouse — Architecture Flow</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root {
@@ -11,229 +11,217 @@
     --rule: #E5E5E5; --rule-2: #F0F0F0;
     --paper: #FFFFFF; --paper-2: #FAFAF8; --paper-3: #F4F4F1;
     --accent: #1E6FFF; --accent-soft: #E8F0FF;
-    --warn: #C0392B; --ok: #0A7C53;
-    --f-display: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
+    --f-display: 'Inter Tight', -apple-system, sans-serif;
     --f-serif: 'Source Serif 4', Georgia, serif;
-    --f-mono: 'JetBrains Mono', 'SFMono-Regular', monospace;
+    --f-mono: 'JetBrains Mono', monospace;
   }
   * { box-sizing: border-box; margin: 0; }
-  body {
-    font-family: var(--f-display);
-    color: var(--ink);
-    background: var(--paper-3);
-    font-feature-settings: "ss01","cv11","tnum";
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    padding: 48px 24px;
-  }
-  .page {
-    max-width: 1360px; margin: 0 auto; background: var(--paper);
-    border: 1px solid var(--rule); padding: 56px 64px;
-    box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 30px 60px -30px rgba(0,0,0,.18);
-    position: relative;
-  }
+  body { font-family: var(--f-display); color: var(--ink); background: var(--paper-3); padding: 48px 24px; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1500px; margin: 0 auto; background: var(--paper); border: 1px solid var(--rule); padding: 56px 64px 40px; box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 30px 60px -30px rgba(0,0,0,.18); position: relative; }
   .stamp { position: absolute; top: 24px; right: 32px; font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; color: var(--muted-2); }
-  .crumb { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 24px; }
+  .crumb { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
   .crumb b { color: var(--accent); font-weight: 500; }
-  h1 { font-size: 44px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; max-width: 900px; }
+  h1 { font-size: 40px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; }
   h1 em { font-family: var(--f-serif); font-style: italic; font-weight: 400; color: var(--accent); }
-  .lede { color: var(--muted); font-size: 15px; line-height: 1.55; max-width: 720px; margin-top: 16px; }
-  .accent-rule { width: 72px; height: 2px; background: var(--accent); margin: 32px 0 48px; }
+  .lede { color: var(--muted); font-size: 14px; line-height: 1.55; max-width: 760px; margin-top: 12px; }
+  .accent-rule { width: 72px; height: 2px; background: var(--accent); margin: 24px 0 12px; }
+  .diagram { width: 100%; height: auto; display: block; }
+  .foot { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-2); }
 
-  .eyebrow { font-family: var(--f-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-  .eyebrow.acc { color: var(--accent); }
-
-  /* Flow grid: 5 stages with arrow gutters */
-  .flow { display: grid; grid-template-columns: 1.35fr 24px 1fr 24px 1.1fr 24px 1fr 24px 1.15fr; gap: 0; align-items: stretch; }
-  .stage { display: flex; flex-direction: column; gap: 12px; }
-  .stage > .eyebrow { padding-bottom: 8px; border-bottom: 1px solid var(--ink); margin-bottom: 4px; }
-  .gutter { display: flex; align-items: center; justify-content: center; color: var(--muted-2); font-family: var(--f-mono); font-size: 14px; }
-
-  .group { border: 1px solid var(--rule); background: var(--paper); }
-  .group-h { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--rule-2); background: var(--paper-2); }
-  .item { padding: 9px 12px; border-bottom: 1px solid var(--rule-2); }
-  .item:last-child { border-bottom: 0; }
-  .item .n { font-size: 13px; font-weight: 500; letter-spacing: -0.01em; }
-  .item .m { font-family: var(--f-mono); font-size: 10px; color: var(--muted-2); margin-top: 2px; }
-
-  .node { border: 1px solid var(--rule); background: var(--paper); padding: 14px; }
-  .node.core { border-color: var(--ink); }
-  .node .n { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; }
-  .node .d { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
-  .node .m { font-family: var(--f-mono); font-size: 10px; color: var(--muted-2); margin-top: 8px; letter-spacing: .04em; }
-  .node .m b { color: var(--accent); font-weight: 500; }
-
-  .node.dark { background: var(--ink); border-color: var(--ink); color: #fff; }
-  .node.dark .d { color: #B9BDC4; }
-  .node.dark .m { color: #8A8F96; }
-  .node.dark .n em { font-family: var(--f-serif); font-style: italic; font-weight: 400; color: var(--accent); }
-
-  .marts { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--rule); }
-  .mart { padding: 10px 12px; border-bottom: 1px solid var(--rule-2); font-size: 12.5px; font-weight: 500; }
-  .mart:nth-child(odd) { border-right: 1px solid var(--rule-2); }
-  .mart:nth-last-child(-n+2) { border-bottom: 0; }
-  .mart span { display: block; font-family: var(--f-mono); font-size: 9.5px; color: var(--muted-2); font-weight: 400; margin-top: 2px; }
-
-  .strip { margin-top: 48px; border-top: 1px solid var(--ink); padding-top: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
-  .strip .cell .t { font-size: 13px; font-weight: 500; margin-top: 6px; }
-  .strip .cell .d { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
-
-  .foot { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-2); }
-
-  @media (max-width: 1080px) {
-    .flow { grid-template-columns: 1fr; }
-    .gutter { transform: rotate(90deg); padding: 8px 0; }
-    .strip { grid-template-columns: 1fr 1fr; }
-    .page { padding: 32px 24px; }
-  }
+  /* SVG text styles */
+  text { font-family: var(--f-display); fill: var(--ink); }
+  .eyebrow { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 1.6px; fill: var(--muted); }
+  .eyebrow.acc { fill: var(--accent); }
+  .grouph { font-family: var(--f-mono); font-size: 9px; letter-spacing: 1.2px; fill: var(--muted); }
+  .name { font-size: 13px; font-weight: 500; letter-spacing: -0.1px; }
+  .item { font-size: 12px; font-weight: 500; }
+  .meta { font-family: var(--f-mono); font-size: 8.5px; fill: var(--muted-2); }
+  .flowlabel { font-family: var(--f-mono); font-size: 8.5px; fill: var(--muted); letter-spacing: .4px; }
+  .white { fill: #fff; }
+  .whitemuted { fill: #B9BDC4; }
+  .acc { fill: var(--accent); }
+  .edge { stroke: #B9BDC4; stroke-width: 1.25; fill: none; }
+  .edge.main { stroke: var(--accent); stroke-width: 1.75; }
+  .nodebox { fill: var(--paper); stroke: var(--rule); }
+  .nodebox.core { stroke: var(--ink); }
+  .groupbox { fill: var(--paper-2); stroke: var(--rule); }
+  .rowline { stroke: var(--rule-2); }
 </style>
 </head>
 <body>
   <div class="page">
     <div class="stamp">CAVA · DATA PLATFORM · 01 / 01</div>
-    <div class="crumb"><b>Architecture</b> / How every source lands in one dashboard</div>
-
-    <h1>Nine sources, one warehouse, <em>one view</em> of the business.</h1>
-    <p class="lede">Every channel CAVA sells or markets on pushes into a single warehouse on a fixed cadence. Transformations turn raw feeds into four governed marts, and any BI front-end — the custom platform, Power BI, or Amazon QuickSight — reads the same numbers.</p>
+    <div class="crumb"><b>Architecture</b> / Source-to-dashboard flow</div>
+    <h1>Every source flows into one warehouse — <em>one view</em> of the business.</h1>
+    <p class="lede">Twelve systems land on a fixed cadence, get conformed by dbt into four governed marts, and every front-end — the custom platform, Power BI, or Amazon QuickSight — reads the same numbers through one metrics layer.</p>
     <div class="accent-rule"></div>
 
-    <div class="flow">
-      <!-- 1 · SOURCES -->
-      <div class="stage">
-        <div class="eyebrow">01 · Source systems</div>
-        <div class="group">
-          <div class="group-h">Commerce channels</div>
-          <div class="item"><div class="n">Shopify (D2C storefront)</div><div class="m">Admin API + webhooks · real-time orders</div></div>
-          <div class="item"><div class="n">Amazon Seller Central</div><div class="m">SP-API · orders, settlements, FBA stock</div></div>
-          <div class="item"><div class="n">Myntra Partner Portal</div><div class="m">Reports API / SFTP · daily</div></div>
-          <div class="item"><div class="n">Zepto Seller Hub</div><div class="m">CSV export / API · SOH, offtake</div></div>
-          <div class="item"><div class="n">Nykaa Fashion Vendor</div><div class="m">Vendor reports · daily</div></div>
-        </div>
-        <div class="group">
-          <div class="group-h">Marketing &amp; web</div>
-          <div class="item"><div class="n">Meta Ads + IG comments</div><div class="m">Marketing API / Graph API · hourly</div></div>
-          <div class="item"><div class="n">Google Ads</div><div class="m">Ads API · hourly</div></div>
-          <div class="item"><div class="n">Google Analytics 4</div><div class="m">BigQuery export · daily</div></div>
-        </div>
-        <div class="group">
-          <div class="group-h">Ops, finance &amp; intel</div>
-          <div class="item"><div class="n">3PL / WMS (Bhiwandi FC)</div><div class="m">API / SFTP · stock, inbound</div></div>
-          <div class="item"><div class="n">Logistics (Shiprocket)</div><div class="m">API · shipments, RTO, COD</div></div>
-          <div class="item"><div class="n">Accounting (Tally / Zoho)</div><div class="m">Export · payables, receivables</div></div>
-          <div class="item"><div class="n">Competitor storefronts</div><div class="m">Public products.json scan · daily</div></div>
-        </div>
-      </div>
+    <svg class="diagram" viewBox="0 0 1500 710" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Architecture flow diagram">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,1.2 L9,5 L0,8.8" fill="none" stroke="#8A8F96" stroke-width="1.4"/>
+        </marker>
+        <marker id="arrAcc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,1.2 L9,5 L0,8.8" fill="none" stroke="#1E6FFF" stroke-width="1.5"/>
+        </marker>
+      </defs>
 
-      <div class="gutter">→</div>
+      <!-- ============ COLUMN EYEBROWS ============ -->
+      <text class="eyebrow" x="32" y="30">01 · SOURCE SYSTEMS</text>
+      <text class="eyebrow" x="396" y="30">02 · INGESTION</text>
+      <text class="eyebrow" x="676" y="30">03 · WAREHOUSE</text>
+      <text class="eyebrow" x="984" y="30">04 · SERVING</text>
+      <text class="eyebrow acc" x="1268" y="30">05 · DASHBOARDS</text>
+      <line x1="32" y1="40" x2="284" y2="40" stroke="#0A0A0A" stroke-width="1"/>
+      <line x1="396" y1="40" x2="592" y2="40" stroke="#0A0A0A" stroke-width="1"/>
+      <line x1="676" y1="40" x2="904" y2="40" stroke="#0A0A0A" stroke-width="1"/>
+      <line x1="984" y1="40" x2="1180" y2="40" stroke="#0A0A0A" stroke-width="1"/>
+      <line x1="1268" y1="40" x2="1472" y2="40" stroke="#1E6FFF" stroke-width="2"/>
 
-      <!-- 2 · INGESTION -->
-      <div class="stage">
-        <div class="eyebrow">02 · Ingestion</div>
-        <div class="node">
-          <div class="n">Managed connectors</div>
-          <div class="d">Airbyte / Fivetran pull the API sources on schedule; no code per source.</div>
-          <div class="m">ELT · <b>hourly–daily</b></div>
-        </div>
-        <div class="node">
-          <div class="n">Webhooks</div>
-          <div class="d">Shopify orders &amp; inventory events stream in as they happen.</div>
-          <div class="m">push · <b>real-time</b></div>
-        </div>
-        <div class="node">
-          <div class="n">Custom jobs</div>
-          <div class="d">Python workers for portals with no API — Myntra/Zepto files, competitor scans.</div>
-          <div class="m">scheduled · <b>daily</b></div>
-        </div>
-        <div class="node">
-          <div class="n">Orchestrator</div>
-          <div class="d">Airflow / Dagster runs, retries and monitors every pipeline.</div>
-          <div class="m">cron + SLA alerts</div>
-        </div>
-      </div>
+      <!-- ============ SOURCES: COMMERCE ============ -->
+      <rect class="groupbox" x="32" y="56" width="252" height="212"/>
+      <text class="grouph" x="44" y="74">COMMERCE CHANNELS</text>
+      <line class="rowline" x1="32" y1="84" x2="284" y2="84"/>
+      <g>
+        <text class="item" x="44" y="102">Shopify — D2C storefront</text><text class="meta" x="44" y="114">Admin API + webhooks</text>
+        <line class="rowline" x1="44" y1="121" x2="272" y2="121"/>
+        <text class="item" x="44" y="139">Amazon Seller Central</text><text class="meta" x="44" y="151">SP-API · orders, settlements</text>
+        <line class="rowline" x1="44" y1="158" x2="272" y2="158"/>
+        <text class="item" x="44" y="176">Myntra Partner Portal</text><text class="meta" x="44" y="188">reports API / SFTP</text>
+        <line class="rowline" x1="44" y1="195" x2="272" y2="195"/>
+        <text class="item" x="44" y="213">Zepto Seller Hub</text><text class="meta" x="44" y="225">CSV / API · SOH, offtake</text>
+        <line class="rowline" x1="44" y1="232" x2="272" y2="232"/>
+        <text class="item" x="44" y="250">Nykaa Fashion Vendor</text><text class="meta" x="44" y="262">vendor reports</text>
+      </g>
 
-      <div class="gutter">→</div>
+      <!-- ============ SOURCES: MARKETING ============ -->
+      <rect class="groupbox" x="32" y="292" width="252" height="140"/>
+      <text class="grouph" x="44" y="310">MARKETING &amp; WEB</text>
+      <line class="rowline" x1="32" y1="320" x2="284" y2="320"/>
+      <text class="item" x="44" y="338">Meta Ads + IG comments</text><text class="meta" x="44" y="350">Marketing / Graph API</text>
+      <line class="rowline" x1="44" y1="357" x2="272" y2="357"/>
+      <text class="item" x="44" y="375">Google Ads</text><text class="meta" x="44" y="387">Ads API</text>
+      <line class="rowline" x1="44" y1="394" x2="272" y2="394"/>
+      <text class="item" x="44" y="412">Google Analytics 4</text><text class="meta" x="44" y="424">BigQuery export</text>
 
-      <!-- 3 · WAREHOUSE -->
-      <div class="stage">
-        <div class="eyebrow">03 · Warehouse</div>
-        <div class="node core">
-          <div class="n">Staging (raw)</div>
-          <div class="d">Landed as-is, immutable, one schema per source.</div>
-          <div class="m">BigQuery / Snowflake / Postgres</div>
-        </div>
-        <div class="node core">
-          <div class="n">Transform (dbt)</div>
-          <div class="d">Cleans, deduplicates and conforms: one order, one SKU, one customer — across all channels.</div>
-          <div class="m">tested models · lineage</div>
-        </div>
-        <div class="marts">
-          <div class="mart">Sales mart<span>primary/secondary · DSR · city</span></div>
-          <div class="mart">Inventory mart<span>SOH · DOH · OSA · demand plan</span></div>
-          <div class="mart">Marketing mart<span>ROAS · funnels · comments</span></div>
-          <div class="mart">Finance mart<span>cash · payables · receivables</span></div>
-        </div>
-      </div>
+      <!-- ============ SOURCES: OPS & INTEL ============ -->
+      <rect class="groupbox" x="32" y="456" width="252" height="176"/>
+      <text class="grouph" x="44" y="474">OPS, FINANCE &amp; INTEL</text>
+      <line class="rowline" x1="32" y1="484" x2="284" y2="484"/>
+      <text class="item" x="44" y="502">3PL / WMS — Bhiwandi FC</text><text class="meta" x="44" y="514">API / SFTP · stock, inbound</text>
+      <line class="rowline" x1="44" y1="521" x2="272" y2="521"/>
+      <text class="item" x="44" y="539">Shiprocket / Delhivery</text><text class="meta" x="44" y="551">API · shipments, RTO, COD</text>
+      <line class="rowline" x1="44" y1="558" x2="272" y2="558"/>
+      <text class="item" x="44" y="576">Tally / Zoho Books</text><text class="meta" x="44" y="588">export · payables, receivables</text>
+      <line class="rowline" x1="44" y1="595" x2="272" y2="595"/>
+      <text class="item" x="44" y="613">Competitor storefronts</text><text class="meta" x="44" y="625">public products.json scan</text>
 
-      <div class="gutter">→</div>
+      <!-- ============ INGESTION NODES ============ -->
+      <rect class="nodebox" x="396" y="96" width="196" height="68"/>
+      <text class="name" x="410" y="122">Webhooks</text>
+      <text class="meta" x="410" y="137">push · real-time orders</text>
 
-      <!-- 4 · SERVING -->
-      <div class="stage">
-        <div class="eyebrow">04 · Serving</div>
-        <div class="node">
-          <div class="n">Metrics layer</div>
-          <div class="d">One definition of NSR, ROAS, DOH, OSA — every tool reads the same formula.</div>
-          <div class="m">semantic model / dbt metrics</div>
-        </div>
-        <div class="node">
-          <div class="n">Query APIs</div>
-          <div class="d">REST/GraphQL for the custom platform; direct SQL for BI tools.</div>
-          <div class="m">row-level access control</div>
-        </div>
-        <div class="node">
-          <div class="n">AI layer</div>
-          <div class="d">LLM with retrieval over the marts powers the Ask-AI assistant.</div>
-          <div class="m">text-to-SQL · guarded</div>
-        </div>
-      </div>
+      <rect class="nodebox" x="396" y="300" width="196" height="68"/>
+      <text class="name" x="410" y="326">Managed connectors</text>
+      <text class="meta" x="410" y="341">Airbyte / Fivetran · hourly–daily</text>
 
-      <div class="gutter">→</div>
+      <rect class="nodebox" x="396" y="512" width="196" height="68"/>
+      <text class="name" x="410" y="538">Custom jobs</text>
+      <text class="meta" x="410" y="553">Python · portals &amp; scrapers · daily</text>
 
-      <!-- 5 · CONSUMPTION -->
-      <div class="stage">
-        <div class="eyebrow acc">05 · One dashboard</div>
-        <div class="node dark">
-          <div class="n">Custom platform <em>(this prototype)</em></div>
-          <div class="d">Next.js on Vercel — sales, SCM, forecasting, marketing, cash flow, Ask&nbsp;AI in one place.</div>
-          <div class="m">cavadatawarehouse.vercel.app</div>
-        </div>
-        <div class="node">
-          <div class="n">Power BI</div>
-          <div class="d">Same marts via DirectQuery/Import for teams already in the Microsoft stack.</div>
-          <div class="m">scheduled refresh · RLS</div>
-        </div>
-        <div class="node">
-          <div class="n">Amazon QuickSight</div>
-          <div class="d">SPICE datasets over the warehouse if the stack standardises on AWS.</div>
-          <div class="m">embedded dashboards</div>
-        </div>
-        <div class="node">
-          <div class="n">Alerts</div>
-          <div class="d">Stockouts, ROAS &lt; 1x, payout lags pushed to Slack / email — no login needed.</div>
-          <div class="m">threshold rules · daily digest</div>
-        </div>
-      </div>
-    </div>
+      <rect x="396" y="616" width="196" height="52" fill="none" stroke="#B9BDC4" stroke-dasharray="4 3"/>
+      <text class="name" x="410" y="638" style="font-size:12px">Orchestrator</text>
+      <text class="meta" x="410" y="652">Airflow / Dagster · retries + SLA alerts</text>
 
-    <div class="strip">
-      <div class="cell"><div class="eyebrow">Cadence</div><div class="t">Real-time to daily</div><div class="d">Orders stream in live; ads and analytics land hourly; marketplace files and competitor scans land daily before 7 AM IST.</div></div>
-      <div class="cell"><div class="eyebrow">Quality</div><div class="t">Tested at the door</div><div class="d">dbt tests on every model — nulls, duplicates, reconciliation against settlement totals — block bad data before dashboards see it.</div></div>
-      <div class="cell"><div class="eyebrow">Governance</div><div class="t">One metric dictionary</div><div class="d">NSR, DOH, OSA and ROAS are defined once in the metrics layer; Power BI, QuickSight and the custom app cannot disagree.</div></div>
-      <div class="cell"><div class="eyebrow">Cost</div><div class="t">Scale as needed</div><div class="d">Start on Postgres + cron for near-zero cost; the same dbt models move to BigQuery/Snowflake unchanged when volume grows.</div></div>
-    </div>
+      <!-- ============ WAREHOUSE CONTAINER ============ -->
+      <rect x="676" y="56" width="228" height="600" fill="none" stroke="#0A0A0A" stroke-width="1"/>
+      <rect class="nodebox core" x="696" y="128" width="188" height="64"/>
+      <text class="name" x="710" y="152">Staging — raw</text>
+      <text class="meta" x="710" y="167">immutable · one schema / source</text>
+
+      <rect class="nodebox core" x="696" y="268" width="188" height="72"/>
+      <text class="name" x="710" y="292">Transform — dbt</text>
+      <text class="meta" x="710" y="307">one order · one SKU · one customer</text>
+      <text class="meta" x="710" y="320">tested models · lineage</text>
+
+      <rect class="nodebox core" x="696" y="412" width="188" height="176"/>
+      <text class="name" x="710" y="436">Marts</text>
+      <line class="rowline" x1="710" y1="446" x2="868" y2="446"/>
+      <text class="item" x="710" y="466">Sales</text><text class="meta" x="710" y="478">P&amp;S · DSR · city · campaigns</text>
+      <text class="item" x="710" y="500">Inventory / SCM</text><text class="meta" x="710" y="512">SOH · DOH · OSA · demand</text>
+      <text class="item" x="710" y="534">Marketing</text><text class="meta" x="710" y="546">ROAS · funnels · comments</text>
+      <text class="item" x="710" y="568">Finance</text><text class="meta" x="710" y="580">cash · payables · receivables</text>
+
+      <text class="meta" x="696" y="640">BigQuery / Snowflake / Postgres</text>
+
+      <!-- ============ SERVING NODES ============ -->
+      <rect class="nodebox" x="984" y="200" width="196" height="68"/>
+      <text class="name" x="998" y="226">Metrics layer</text>
+      <text class="meta" x="998" y="241">one definition: NSR · ROAS · DOH</text>
+
+      <rect class="nodebox" x="984" y="330" width="196" height="68"/>
+      <text class="name" x="998" y="356">Query APIs</text>
+      <text class="meta" x="998" y="371">REST / GraphQL · row-level access</text>
+
+      <rect class="nodebox" x="984" y="460" width="196" height="68"/>
+      <text class="name" x="998" y="486">AI layer</text>
+      <text class="meta" x="998" y="501">LLM + retrieval · text-to-SQL</text>
+
+      <!-- ============ CONSUMPTION NODES ============ -->
+      <rect x="1268" y="140" width="204" height="92" fill="#0A0A0A"/>
+      <text class="name white" x="1282" y="166">Custom platform</text>
+      <text class="meta whitemuted" x="1282" y="181">this prototype · Next.js on Vercel</text>
+      <text class="meta acc" x="1282" y="196">sales · SCM · marketing · Ask AI</text>
+
+      <rect class="nodebox" x="1268" y="286" width="204" height="64"/>
+      <text class="name" x="1282" y="310">Power BI</text>
+      <text class="meta" x="1282" y="325">DirectQuery / Import · RLS</text>
+
+      <rect class="nodebox" x="1268" y="392" width="204" height="64"/>
+      <text class="name" x="1282" y="416">Amazon QuickSight</text>
+      <text class="meta" x="1282" y="431">SPICE · embedded</text>
+
+      <rect class="nodebox" x="1268" y="498" width="204" height="64"/>
+      <text class="name" x="1282" y="522">Alerts</text>
+      <text class="meta" x="1282" y="537">Slack / email · thresholds</text>
+
+      <!-- ============ EDGES: SOURCES → INGESTION ============ -->
+      <path class="edge" d="M284,110 C340,110 340,130 396,130" marker-end="url(#arr)"/>
+      <text class="flowlabel" x="300" y="104">real-time</text>
+      <path class="edge" d="M284,200 C346,200 336,320 396,326" marker-end="url(#arr)"/>
+      <path class="edge" d="M284,362 C340,362 340,340 396,338" marker-end="url(#arr)"/>
+      <path class="edge" d="M284,544 C340,544 340,546 396,546" marker-end="url(#arr)"/>
+
+      <!-- ============ EDGES: INGESTION → STAGING ============ -->
+      <path class="edge" d="M592,130 C648,130 644,148 696,152" marker-end="url(#arr)"/>
+      <path class="edge" d="M592,334 C650,334 640,180 696,166" marker-end="url(#arr)"/>
+      <path class="edge" d="M592,546 C660,546 640,200 696,178" marker-end="url(#arr)"/>
+
+      <!-- ============ EDGES: INSIDE WAREHOUSE ============ -->
+      <path class="edge" d="M790,192 L790,262" marker-end="url(#arr)"/>
+      <path class="edge" d="M790,340 L790,406" marker-end="url(#arr)"/>
+
+      <!-- ============ EDGES: MARTS → SERVING ============ -->
+      <path class="edge" d="M884,470 C940,470 934,246 984,234" marker-end="url(#arr)"/>
+      <path class="edge" d="M884,500 C940,500 934,372 984,364" marker-end="url(#arr)"/>
+      <path class="edge" d="M884,530 C940,530 934,494 984,494" marker-end="url(#arr)"/>
+
+      <!-- ============ EDGES: SERVING → DASHBOARDS ============ -->
+      <path class="edge main" d="M1180,364 C1230,364 1222,196 1268,186" marker-end="url(#arrAcc)"/>
+      <path class="edge" d="M1180,494 C1236,494 1226,220 1268,208" marker-end="url(#arr)"/>
+      <path class="edge" d="M1180,224 C1228,224 1224,308 1268,314" marker-end="url(#arr)"/>
+      <path class="edge" d="M1180,244 C1232,244 1226,414 1268,420" marker-end="url(#arr)"/>
+      <path class="edge" d="M1180,384 C1234,384 1228,524 1268,528" marker-end="url(#arr)"/>
+
+      <!-- flow labels -->
+      <text class="flowlabel" x="1196" y="352">APIs</text>
+      <text class="flowlabel" x="1196" y="510">Ask AI</text>
+      <text class="flowlabel" x="1188" y="258">SQL / semantic</text>
+    </svg>
 
     <div class="foot">
       <span>CAVA Athleisure · Data Warehouse Architecture</span>
-      <span>v1.0 · July 2026 · Confidential</span>
+      <span>v1.1 · July 2026 · Confidential</span>
     </div>
   </div>
 </body>

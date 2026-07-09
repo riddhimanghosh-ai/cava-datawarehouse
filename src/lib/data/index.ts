@@ -15,3 +15,4 @@ export * from "./competitorCatalog";
 export * from "./webAnalytics";
 export * from "./assistant";
 export * from "./cityLevelSales";
+export * from "./campaignSales";

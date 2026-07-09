@@ -9,6 +9,7 @@ const TITLES: Record<string, { title: string; subtitle: string }> = {
   "/sales/primary-secondary": { title: "Primary & Secondary Sales", subtitle: "Sell-in vs. sell-through, and the gap between them" },
   "/sales/daily-report": { title: "Daily Sales Report", subtitle: "MTD performance vs. plan, forecast, LM & LY, plus offtake" },
   "/sales/city-report": { title: "City-Level Sales Report", subtitle: "Gross, NSR, discount, contribution, AOV & COD by city and state" },
+  "/sales/campaign-report": { title: "Campaign Sales Report", subtitle: "Per-campaign users, orders, AOV, discount, NSR & coupon usage" },
   "/inventory": { title: "Inventory", subtitle: "SKU-level stock health, reorder recommendations" },
   "/forecasting": { title: "Demand Forecasting", subtitle: "Monthly demand plan by channel vs. production capacity" },
   "/scm": { title: "SCM", subtitle: "SOH, DOH, on-shelf availability & category RCA" },

@@ -21,6 +21,7 @@ export const GROUPS = [
       { href: "/sales/primary-secondary", label: "Primary & Secondary Sales" },
       { href: "/sales/daily-report", label: "Daily Sales Report" },
       { href: "/sales/city-report", label: "City-Level Sales Report" },
+      { href: "/sales/campaign-report", label: "Campaign Sales Report" },
     ],
   },
   {

@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import { Bell, Search } from "lucide-react";
 
 const TITLES: Record<string, { title: string; subtitle: string }> = {
-  "/": { title: "Overview", subtitle: "Cross-channel health at a glance" },
   "/assistant": { title: "Ask AI", subtitle: "Query your data warehouse in plain English" },
   "/sales/primary-secondary": { title: "Primary & Secondary Sales", subtitle: "Sell-in vs. sell-through, and the gap between them" },
   "/sales/daily-report": { title: "Daily Sales Report", subtitle: "MTD performance vs. plan, forecast, LM & LY, plus offtake" },
@@ -26,7 +25,7 @@ const TITLES: Record<string, { title: string; subtitle: string }> = {
 
 export function Topbar() {
   const pathname = usePathname();
-  const meta = TITLES[pathname] ?? TITLES["/"];
+  const meta = TITLES[pathname] ?? { title: "CAVA Data Warehouse", subtitle: "Cross-channel intelligence" };
 
   return (
     <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--background)]/90 backdrop-blur px-6 py-4 sticky top-0 z-10">

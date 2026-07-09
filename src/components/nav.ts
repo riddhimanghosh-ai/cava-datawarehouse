@@ -1,5 +1,4 @@
 import {
-  LayoutDashboard,
   Wallet,
   BarChart3,
   Boxes,
@@ -9,7 +8,6 @@ import {
 } from "lucide-react";
 
 export const TOP_LEVEL = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/assistant", label: "Ask AI", icon: Sparkles },
 ];
 

@@ -13,6 +13,11 @@ const TITLES: Record<string, { title: string; subtitle: string }> = {
   "/pricing": { title: "Pricing Tracker", subtitle: "MRP & SP by platform — own SKUs vs. competitors" },
   "/cashflow": { title: "Cash Flow Management", subtitle: "Payout cycles, receivables, payables & runway" },
   "/marketing": { title: "Marketing Pulse", subtitle: "Trends, reels, ads, deals & competitor moves" },
+  "/marketing/events": { title: "Events & Campaigns", subtitle: "Log every growth lever & measure revenue lift vs. baseline" },
+  "/marketing/social-comments": { title: "Social Comments", subtitle: "Every ad comment — read, classified & triaged before it costs a sale" },
+  "/marketing/price-tracker": { title: "Competitor Price Tracker", subtitle: "Track competitor Shopify catalogs — price moves, launches & stock-outs" },
+  "/marketing/new-launches": { title: "New Launch Detector", subtitle: "Know about competitor launches the day they happen" },
+  "/marketing/stockout-sniper": { title: "Stockout Sniper", subtitle: "When a competitor's bestseller runs dry, capture the demand" },
 };
 
 export function Topbar() {

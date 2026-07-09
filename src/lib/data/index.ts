@@ -9,3 +9,6 @@ export * from "./categoryRca";
 export * from "./salesPlan";
 export * from "./demandPlan";
 export * from "./pricing";
+export * from "./events";
+export * from "./socialComments";
+export * from "./competitorCatalog";

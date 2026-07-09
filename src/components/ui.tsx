@@ -85,6 +85,17 @@ const BADGE_TONES: Record<string, string> = {
   crashing: "bg-red-500/15 text-red-400 border-red-500/30",
   deteriorating: "bg-orange-500/15 text-orange-400 border-orange-500/30",
   improving: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  upcoming: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+  live: "bg-[var(--accent)]/20 text-[var(--accent)] border-[var(--accent)]/40",
+  ended: "bg-[var(--surface-2)] text-[var(--muted)] border-[var(--border)]",
+  positive: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  negative: "bg-red-500/15 text-red-400 border-red-500/30",
+  neutral: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+  "new-launch": "bg-[var(--accent)]/20 text-[var(--accent)] border-[var(--accent)]/40",
+  restocked: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+  "price-drop": "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  "price-hike": "bg-orange-500/15 text-orange-400 border-orange-500/30",
+  stockout: "bg-red-500/15 text-red-400 border-red-500/30",
 };
 
 export function Badge({ tone, children }: { tone: string; children: string }) {

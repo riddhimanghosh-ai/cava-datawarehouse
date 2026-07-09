@@ -44,7 +44,14 @@ const GROUPS = [
   {
     title: "Marketing",
     icon: Megaphone,
-    items: [{ href: "/marketing", label: "Marketing Pulse" }],
+    items: [
+      { href: "/marketing", label: "Marketing Pulse" },
+      { href: "/marketing/events", label: "Events & Campaigns" },
+      { href: "/marketing/social-comments", label: "Social Comments" },
+      { href: "/marketing/price-tracker", label: "Competitor Price Tracker" },
+      { href: "/marketing/new-launches", label: "New Launch Detector" },
+      { href: "/marketing/stockout-sniper", label: "Stockout Sniper" },
+    ],
   },
 ];
 

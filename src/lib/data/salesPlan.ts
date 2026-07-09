@@ -1,7 +1,67 @@
 import { seededRandom } from "../rng";
-import { Category, Channel } from "./products";
+import { Category, Channel, PRODUCTS } from "./products";
 
 const rng = seededRandom(8214);
+
+// --- Primary vs Secondary, SKU-wise --------------------------------------
+// Qty = units billed (primary) / sold-through (secondary). GMV = gross
+// merchandise value. NSR (Net Sales Realisation) = GMV net of returns,
+// discounts & channel fees; pre-tax then post-tax (after GST).
+
+export interface PrimarySecondarySkuRow {
+  sku: string;
+  name: string;
+  category: Category;
+  primaryQty: number;
+  primaryGmv: number;
+  primaryPreTaxNsr: number;
+  primaryPostTaxNsr: number;
+  secondaryQty: number;
+  secondaryGmv: number;
+  secondaryPreTaxNsr: number;
+  secondaryPostTaxNsr: number;
+}
+
+export const PRIMARY_SECONDARY_SKU: PrimarySecondarySkuRow[] = PRODUCTS.map((p) => {
+  const primaryQty = rng.int(1200, 42000);
+  const primaryGmv = Math.round(primaryQty * p.price * rng.range(0.96, 1.0));
+  const primaryPreTaxNsr = Math.round(primaryGmv * rng.range(0.7, 0.78));
+  const primaryPostTaxNsr = Math.round(primaryPreTaxNsr * 0.9525);
+  // Secondary (sell-through) is usually a bit below primary billing
+  const secondaryQty = Math.round(primaryQty * rng.range(0.86, 1.02));
+  const secondaryGmv = Math.round(secondaryQty * p.price * rng.range(0.94, 1.0));
+  const secondaryPreTaxNsr = Math.round(secondaryGmv * rng.range(0.72, 0.8));
+  const secondaryPostTaxNsr = Math.round(secondaryPreTaxNsr * 0.9525);
+  return {
+    sku: p.sku,
+    name: p.name,
+    category: p.category,
+    primaryQty,
+    primaryGmv,
+    primaryPreTaxNsr,
+    primaryPostTaxNsr,
+    secondaryQty,
+    secondaryGmv,
+    secondaryPreTaxNsr,
+    secondaryPostTaxNsr,
+  };
+});
+
+export function primarySecondarySkuTotals() {
+  return PRIMARY_SECONDARY_SKU.reduce(
+    (acc, r) => ({
+      primaryQty: acc.primaryQty + r.primaryQty,
+      primaryGmv: acc.primaryGmv + r.primaryGmv,
+      primaryPreTaxNsr: acc.primaryPreTaxNsr + r.primaryPreTaxNsr,
+      primaryPostTaxNsr: acc.primaryPostTaxNsr + r.primaryPostTaxNsr,
+      secondaryQty: acc.secondaryQty + r.secondaryQty,
+      secondaryGmv: acc.secondaryGmv + r.secondaryGmv,
+      secondaryPreTaxNsr: acc.secondaryPreTaxNsr + r.secondaryPreTaxNsr,
+      secondaryPostTaxNsr: acc.secondaryPostTaxNsr + r.secondaryPostTaxNsr,
+    }),
+    { primaryQty: 0, primaryGmv: 0, primaryPreTaxNsr: 0, primaryPostTaxNsr: 0, secondaryQty: 0, secondaryGmv: 0, secondaryPreTaxNsr: 0, secondaryPostTaxNsr: 0 }
+  );
+}
 
 // --- Primary vs Secondary sales -------------------------------------------
 // Primary = brand billing into a channel (sell-in). Secondary = what the

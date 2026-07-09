@@ -43,27 +43,27 @@ export default function InventoryPage() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total SOH (units)" value={formatNumber(total.totalSoh)} />
-        <StatCard label="Blended DOH" value={`${total.doh}d`} tone={dohTone(total.doh) === "ok" ? "ok" : "danger"} />
-        <StatCard label="Avg on-shelf availability (7d)" value={`${osaSum.avgOsa}%`} tone={osaSum.avgOsa >= 80 ? "ok" : "danger"} />
-        <StatCard label="P0 critical OSA listings" value={`${osaSum.p0}`} tone="danger" />
+        <StatCard label="Total SOH (Stock on Hand, units)" value={formatNumber(total.totalSoh)} />
+        <StatCard label="Blended DOH (Days on Hand)" value={`${total.doh}d`} tone={dohTone(total.doh) === "ok" ? "ok" : "danger"} />
+        <StatCard label="Avg OSA (On-Shelf Availability, 7d)" value={`${osaSum.avgOsa}%`} tone={osaSum.avgOsa >= 80 ? "ok" : "danger"} />
+        <StatCard label="P0 critical OSA (On-Shelf Availability) listings" value={`${osaSum.p0}`} tone="danger" />
       </div>
 
       <Card>
-        <CardHeader title="Stock on hand — by channel" subtitle="Total SOH, trailing consumption, days-of-hand & pipeline. Click a channel to see its category split." />
+        <CardHeader title="Stock on hand — by channel" subtitle="Total SOH (Stock on Hand), trailing consumption, DOH (Days on Hand) & pipeline. Click a channel to see its category split." />
         <div className="overflow-x-auto -mx-5">
           <table className="w-full text-sm min-w-[880px]">
             <thead>
               <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
                 <th className="py-2 px-5 font-medium">Channel</th>
-                <th className="py-2 px-2 font-medium">Total SOH</th>
+                <th className="py-2 px-2 font-medium">SOH (Stock on Hand)</th>
                 <th className="py-2 px-2 font-medium">Consumption (30d)</th>
-                <th className="py-2 px-2 font-medium">DOH</th>
-                <th className="py-2 px-2 font-medium">DOH (LD)</th>
+                <th className="py-2 px-2 font-medium">DOH (Days on Hand)</th>
+                <th className="py-2 px-2 font-medium">DOH LD (Days on Hand, Last Day)</th>
                 <th className="py-2 px-2 font-medium">Avg lead time</th>
                 <th className="py-2 px-2 font-medium">Open orders</th>
                 <th className="py-2 px-2 font-medium">In transit</th>
-                <th className="py-2 px-2 font-medium">Avg MRP</th>
+                <th className="py-2 px-2 font-medium">Avg MRP (Maximum Retail Price)</th>
               </tr>
             </thead>
             <tbody>
@@ -78,7 +78,7 @@ export default function InventoryPage() {
 
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <CardHeader title="On-shelf availability — needs attention" subtitle="SKUs below 85% 7-day OSA, sorted by priority" />
+          <CardHeader title="OSA (On-Shelf Availability) — needs attention" subtitle="SKUs below 85% 7-day OSA (On-Shelf Availability), sorted by priority" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {OSA.filter((r) => r.priority !== "Healthy")
@@ -97,7 +97,7 @@ export default function InventoryPage() {
                     <Badge tone={r.priority}>{r.priority}</Badge>
                   </div>
                   <div className="flex items-center justify-between text-xs text-[var(--muted)] mb-1">
-                    <span>7d OSA: <span className="text-[var(--foreground)] font-semibold">{r.last7DayOsa}%</span></span>
+                    <span>7d OSA (On-Shelf Availability): <span className="text-[var(--foreground)] font-semibold">{r.last7DayOsa}%</span></span>
                     <Badge tone={r.trend}>{r.trend}</Badge>
                   </div>
                   <ResponsiveContainer width="100%" height={30}>
@@ -202,7 +202,7 @@ function CategoryRcaCard() {
   return (
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <CardHeader title="Category RCA" subtitle="Market share, on-shelf availability & share of voice by category" />
+        <CardHeader title="Category RCA (Root Cause Analysis)" subtitle="MS (Market Share) · OSA (On-Shelf Availability) · SOV (Share of Voice) by category" />
         <Pills options={months.map((m) => ({ value: m, label: m }))} value={month} onChange={setMonth} />
       </div>
       <div className="overflow-x-auto -mx-5">

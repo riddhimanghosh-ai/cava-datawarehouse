@@ -16,7 +16,7 @@ export default function MarketingPage() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Blended ROAS (7 campaigns)" value={`${blendedRoas.toFixed(2)}x`} changePct={4.2} changeLabel="week over week" />
+        <StatCard label="Blended ROAS (Return on Ad Spend) — 7 campaigns" value={`${blendedRoas.toFixed(2)}x`} changePct={4.2} changeLabel="week over week" />
         <StatCard label="Ad spend (30d)" value={formatINR(totalSpend, true)} />
         <StatCard label="Viral / trending reels" value={`${viralReels}`} tone="ok" />
         <StatCard label="Deals decaying or dead" value={`${deadDeals}`} tone="danger" />
@@ -68,7 +68,7 @@ export default function MarketingPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Ad campaign performance" subtitle="ROAS trend & recommended action" />
+          <CardHeader title="Ad campaign performance" subtitle="ROAS (Return on Ad Spend) trend & recommended action" />
           <div className="space-y-3">
             {AD_CAMPAIGNS.map((a) => (
               <div key={a.name} className="flex items-start gap-3 rounded-lg bg-[var(--surface-2)] px-3 py-3">
@@ -79,7 +79,7 @@ export default function MarketingPage() {
                     <Badge tone={a.status}>{a.status}</Badge>
                   </div>
                   <div className="text-[11px] text-[var(--muted)]">
-                    {a.platform} · {a.roas.toFixed(2)}x ROAS ({formatPct(a.roasChangePct)}) · CTR {a.ctr}% · spend {formatINR(a.spend, true)}
+                    {a.platform} · {a.roas.toFixed(2)}x ROAS (Return on Ad Spend) ({formatPct(a.roasChangePct)}) · CTR (Click-Through Rate) {a.ctr}% · spend {formatINR(a.spend, true)}
                   </div>
                 </div>
               </div>

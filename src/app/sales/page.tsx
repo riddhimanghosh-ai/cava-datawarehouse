@@ -41,7 +41,7 @@ export default function SalesPage() {
           tone={ps.gapLakh > 15 ? "danger" : "ok"}
           changePct={undefined}
         />
-        <StatCard label="MTD net achieved (all channels)" value={`${totals.pctAchieved}%`} tone={totals.pctAchieved >= 90 ? "ok" : "danger"} />
+        <StatCard label="MTD (Month to Date) net achieved" value={`${totals.pctAchieved}%`} tone={totals.pctAchieved >= 90 ? "ok" : "danger"} />
       </div>
 
       <Card>
@@ -69,22 +69,22 @@ export default function SalesPage() {
       </Card>
 
       <Card>
-        <CardHeader title="Daily Sales Report — channel tracking" subtitle="Month-to-date performance vs. plan, forecast, last month & last year" />
+        <CardHeader title="Daily Sales Report — channel tracking" subtitle="MTD (Month to Date) performance vs. plan, forecast, LM (Last Month) & LY (Last Year)" />
         <div className="overflow-x-auto -mx-5">
           <table className="w-full text-sm min-w-[1000px]">
             <thead>
               <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
                 <th className="py-2 px-5 font-medium">Channel group</th>
-                <th className="py-2 px-2 font-medium">B Plan</th>
-                <th className="py-2 px-2 font-medium">D Plan</th>
-                <th className="py-2 px-2 font-medium">MTD Gross</th>
-                <th className="py-2 px-2 font-medium">RTO</th>
+                <th className="py-2 px-2 font-medium">B Plan (Budget Plan)</th>
+                <th className="py-2 px-2 font-medium">D Plan (Demand Plan)</th>
+                <th className="py-2 px-2 font-medium">MTD (Month to Date) Gross</th>
+                <th className="py-2 px-2 font-medium">RTO (Return to Origin)</th>
                 <th className="py-2 px-2 font-medium">Cancelled</th>
-                <th className="py-2 px-2 font-medium">MTD Net</th>
+                <th className="py-2 px-2 font-medium">MTD (Month to Date) Net</th>
                 <th className="py-2 px-2 font-medium">% Achieved</th>
                 <th className="py-2 px-2 font-medium">Forecast</th>
-                <th className="py-2 px-2 font-medium">F vs LM</th>
-                <th className="py-2 px-2 font-medium">F vs LY</th>
+                <th className="py-2 px-2 font-medium">F GOLM (Forecast Growth over Last Month)</th>
+                <th className="py-2 px-2 font-medium">F GOLY (Forecast Growth over Last Year)</th>
               </tr>
             </thead>
             <tbody>

@@ -13,7 +13,7 @@ export default function ForecastingPage() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="8-week forecast accuracy (MAPE-based)" value={`${accuracy}%`} tone={accuracy >= 85 ? "ok" : "danger"} />
+        <StatCard label="8-week forecast accuracy (MAPE — Mean Absolute % Error)" value={`${accuracy}%`} tone={accuracy >= 85 ? "ok" : "danger"} />
         <StatCard label="SKUs surging" value={`${surging}`} tone="ok" />
         <StatCard label="SKUs cooling" value={`${cooling}`} tone="danger" />
         <StatCard label="Next 4-week unit demand (all SKUs)" value={formatNumber(SKU_FORECASTS.reduce((s, r) => s + r.next4WeekDemand, 0))} />

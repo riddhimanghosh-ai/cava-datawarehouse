@@ -20,8 +20,8 @@ export function MobileNav() {
     <div className="md:hidden">
       <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-[var(--accent)] flex items-center justify-center font-black text-black">C</div>
-          <span className="font-bold tracking-tight">CAVA</span>
+          <div className="h-8 w-8 border border-[var(--ink)] flex items-center justify-center font-medium">C</div>
+          <span className="font-medium tracking-tight">CAVA</span>
         </div>
         <button onClick={() => setOpen(true)} className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-2" aria-label="Open menu">
           <Menu size={18} />
@@ -50,8 +50,8 @@ export function MobileNav() {
 
             {GROUPS.map((group) => (
               <div key={group.title} className="mt-4">
-                <div className="flex items-center gap-2 px-3 mb-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
-                  <group.icon size={13} />
+                <div className="flex items-center gap-2 px-2 mb-1 eyebrow">
+                  <group.icon size={13} strokeWidth={1.5} />
                   {group.title}
                 </div>
                 <div className="flex flex-col gap-0.5">
@@ -91,12 +91,12 @@ function MobileLink({
     <Link
       href={href}
       className={cx(
-        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-        indent && "ml-3 pl-4 border-l border-[var(--border)] rounded-l-none",
-        active ? "bg-[var(--accent)] text-black" : "text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]"
+        "flex items-center gap-3 px-2 py-2.5 text-sm transition-colors border-l-2",
+        indent && "ml-2 pl-4",
+        active ? "border-[var(--accent)] text-[var(--accent)] font-medium" : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
       )}
     >
-      {Icon && <Icon size={17} strokeWidth={2.25} />}
+      {Icon && <Icon size={16} strokeWidth={1.5} />}
       {label}
     </Link>
   );

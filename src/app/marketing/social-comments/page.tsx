@@ -63,7 +63,7 @@ export default function SocialCommentsPage() {
           <CardHeader title="Comment triage" subtitle={`${comments.length} comments · AI sentiment (Claude Haiku) across English, Hindi & Hinglish`} />
           <Pills
             options={[
-              { value: "intent", label: "🛒 Purchase intent" },
+              { value: "intent", label: "Purchase intent" },
               { value: "all", label: "All" },
               { value: "positive", label: "Positive" },
               { value: "negative", label: "Negative" },
@@ -95,14 +95,14 @@ function CommentRow({ comment: c }: { comment: SocialComment }) {
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="text-sm font-medium">@{c.author}</span>
             <Badge tone={c.sentiment}>{c.sentiment}</Badge>
-            {c.purchaseIntent && <Badge tone="new-launch">🛒 purchase intent</Badge>}
+            {c.purchaseIntent && <Badge tone="new-launch">purchase intent</Badge>}
             <span className="text-[10px] text-[var(--muted)]">{c.language}</span>
           </div>
           <p className="text-sm">{c.text}</p>
           <div className="flex items-center gap-3 text-[11px] text-[var(--muted)] mt-1.5">
             <span>{c.platform} · {c.ad}</span>
             <span className="flex items-center gap-1"><Clock size={10} /> {c.ageHours}h ago</span>
-            {c.answered ? <span className="text-[var(--ok)]">✓ replied</span> : <span className="text-[var(--warning)]">awaiting reply</span>}
+            {c.answered ? <span className="text-[var(--ok)]">Replied</span> : <span className="text-[var(--warning)]">awaiting reply</span>}
           </div>
         </div>
       </div>

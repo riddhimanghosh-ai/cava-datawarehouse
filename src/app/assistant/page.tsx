@@ -12,7 +12,7 @@ interface Msg {
 }
 
 const GREETING =
-  "Hi! I'm your CAVA data assistant. I can read across inventory, sales, cash flow and marketing. Ask me anything — or tap a suggested question below.";
+  "I'm your CAVA data assistant. I can read across inventory, sales, cash flow and marketing. Ask me anything — or tap a suggested question below.";
 
 export default function AssistantPage() {
   const [messages, setMessages] = useState<Msg[]>([{ role: "assistant", text: GREETING }]);
@@ -54,7 +54,7 @@ export default function AssistantPage() {
               <div
                 className={cx(
                   "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-line leading-relaxed",
-                  m.role === "user" ? "bg-[var(--accent)] text-black" : "bg-[var(--surface-2)] text-[var(--foreground)]"
+                  m.role === "user" ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--foreground)]"
                 )}
               >
                 {m.text}
@@ -100,7 +100,7 @@ export default function AssistantPage() {
           <button
             onClick={() => send(input)}
             disabled={!input.trim() || thinking}
-            className="rounded-xl bg-[var(--accent)] text-black px-4 py-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="rounded-xl bg-[var(--accent)] text-white px-4 py-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Send size={16} />
           </button>

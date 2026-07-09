@@ -21,21 +21,23 @@ export function Sidebar() {
 
   return (
     <aside className="hidden md:flex w-72 flex-col shrink-0 border-r border-[var(--border)] bg-[var(--surface)] px-4 py-5 overflow-y-auto">
-      <div className="flex items-center gap-2 px-2 mb-6">
-        <div className="h-9 w-9 rounded-lg bg-[var(--accent)] flex items-center justify-center font-black text-black text-lg">C</div>
+      <div className="flex items-center gap-3 px-2 mb-8">
+        <div className="h-9 w-9 border border-[var(--ink)] flex items-center justify-center font-medium text-[15px]">C</div>
         <div>
-          <div className="font-bold tracking-tight leading-none">CAVA</div>
-          <div className="text-[11px] text-[var(--muted)] leading-none">Athleisure · Data Warehouse</div>
+          <div className="font-medium tracking-tight leading-none">
+            CAVA <span className="serif-accent">Athleisure</span>
+          </div>
+          <div className="eyebrow mt-1">Data Warehouse</div>
         </div>
       </div>
 
-      <nav className="flex flex-col gap-1">
+      <nav className="flex flex-col">
         {TOP_LEVEL.map(({ href, label, icon: Icon }) => (
           <NavLink key={href} href={href} label={label} icon={Icon} active={pathname === href} />
         ))}
       </nav>
 
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="mt-6 flex flex-col gap-5">
         {GROUPS.map((group) => {
           const isCollapsed = collapsed.has(group.title);
           const groupActive = group.items.some((i) => pathname === i.href || pathname.startsWith(i.href + "/"));
@@ -45,16 +47,16 @@ export function Sidebar() {
               <button
                 onClick={() => toggle(group.title)}
                 className={cx(
-                  "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors",
-                  groupActive ? "text-[var(--accent)]" : "text-[var(--muted)] hover:text-[var(--foreground)]"
+                  "flex w-full items-center gap-2 px-2 py-1.5 eyebrow transition-colors",
+                  groupActive ? "!text-[var(--accent)]" : "hover:!text-[var(--foreground)]"
                 )}
               >
-                <GroupIcon size={14} />
+                <GroupIcon size={13} strokeWidth={1.5} />
                 <span className="flex-1 text-left">{group.title}</span>
-                <ChevronDown size={13} className={cx("transition-transform", isCollapsed && "-rotate-90")} />
+                <ChevronDown size={12} className={cx("transition-transform", isCollapsed && "-rotate-90")} />
               </button>
               {!isCollapsed && (
-                <div className="flex flex-col gap-0.5 mt-0.5">
+                <div className="flex flex-col mt-1">
                   {group.items.map((item) => (
                     <NavLink key={item.href} href={item.href} label={item.label} active={pathname === item.href} indent />
                   ))}
@@ -65,18 +67,18 @@ export function Sidebar() {
         })}
       </div>
 
-      <nav className="flex flex-col gap-1 mt-4 pt-4 border-t border-[var(--border)]">
+      <nav className="flex flex-col mt-6 pt-4 border-t border-[var(--border)]">
         {BOTTOM_LEVEL.map(({ href, label, icon: Icon }) => (
           <NavLink key={href} href={href} label={label} icon={Icon} active={pathname === href} />
         ))}
       </nav>
 
       <div className="mt-auto pt-6">
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3 text-xs text-[var(--muted)]">
-          <div className="text-[var(--foreground)] font-semibold mb-1">Live channels</div>
+        <div className="border border-[var(--border)] bg-[var(--surface-2)] p-3 text-xs text-[var(--muted)]">
+          <div className="eyebrow mb-1.5">Live channels</div>
           Shopify D2C · Amazon · Myntra · Zepto · Nykaa Fashion
         </div>
-        <div className="text-[10px] text-[var(--muted)] mt-3 px-1">Prototype data — for demo purposes only.</div>
+        <div className="eyebrow mt-3 px-1">Prototype data — demo only</div>
       </div>
     </aside>
   );
@@ -99,12 +101,14 @@ function NavLink({
     <Link
       href={href}
       className={cx(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-        indent && "ml-3 pl-4 border-l border-[var(--border)] rounded-l-none",
-        active ? "bg-[var(--accent)] text-black" : "text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]"
+        "flex items-center gap-3 px-2 py-2 text-sm transition-colors border-l-2",
+        indent && "ml-2 pl-4",
+        active
+          ? "border-[var(--accent)] text-[var(--accent)] font-medium"
+          : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
       )}
     >
-      {Icon && <Icon size={17} strokeWidth={2.25} />}
+      {Icon && <Icon size={16} strokeWidth={1.5} />}
       {label}
     </Link>
   );

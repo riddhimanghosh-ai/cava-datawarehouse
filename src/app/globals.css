@@ -1,24 +1,40 @@
 @import "tailwindcss";
 
+/*
+  The DevX Doctrine — light editorial theme.
+  Existing component variable names are preserved and remapped to doctrine
+  tokens so the whole app flips at the source.
+*/
 :root {
-  --background: #0a0b0a;
-  --surface: #131513;
-  --surface-2: #1a1d1a;
-  --border: #262a26;
-  --foreground: #f2f4ef;
-  --muted: #9aa39a;
-  --accent: #c6ff3d;
-  --accent-dark: #8fd400;
-  --danger: #ff5d5d;
-  --warning: #ffb84d;
-  --ok: #3ddc84;
+  --ink: #0a0a0a;
+  --ink-2: #1a1a1a;
+
+  /* Mapped legacy names */
+  --background: #ffffff; /* paper */
+  --surface: #ffffff; /* card bg — defined by hairline border, not fill */
+  --surface-2: #fafaf8; /* paper-2 subtle inset */
+  --surface-3: #f4f4f1; /* paper-3 block/inset */
+  --border: #e5e5e5; /* rule */
+  --border-2: #f0f0f0; /* subtle rule */
+  --foreground: #0a0a0a; /* ink */
+  --muted: #5c6066;
+  --muted-2: #8a8f96;
+
+  --accent: #1e6fff;
+  --accent-dark: #1657cc;
+  --accent-soft: #e8f0ff;
+
+  --danger: #c0392b; /* warn */
+  --warning: #9a6700; /* doctrine-safe amber-ink */
+  --ok: #0a7c53;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-display);
+  --font-mono: var(--font-jbmono);
+  --font-serif: var(--font-serif);
 }
 
 * {
@@ -31,16 +47,50 @@ html, body {
 }
 
 body {
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-display), "Inter Tight", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: "tnum";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Doctrine: sharp corners on all block containers. Pills/dots (rounded-full)
+   and circular avatars are intentionally left alone. */
+.rounded, .rounded-sm, .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl {
+  border-radius: 0 !important;
+}
+
+/* Doctrine: no elevation. Depth comes from rules and spacing. */
+.shadow, .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl {
+  box-shadow: none !important;
+}
+
+/* Editorial italic-serif accent for one key word inside a headline. */
+.serif-accent {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  color: var(--accent);
+  font-weight: 400;
+}
+
+/* Monospace eyebrow / label. */
+.eyebrow {
+  font-family: var(--font-jbmono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tnum {
+  font-feature-settings: "tnum";
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;

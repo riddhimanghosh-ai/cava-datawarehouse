@@ -29,21 +29,21 @@ export function Topbar() {
   const meta = TITLES[pathname] ?? TITLES["/"];
 
   return (
-    <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur px-6 py-4 sticky top-0 z-10">
+    <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--background)]/90 backdrop-blur px-6 py-4 sticky top-0 z-10">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight">{meta.title}</h1>
-        <p className="text-xs text-[var(--muted)]">{meta.subtitle}</p>
+        <h1 className="text-xl font-medium tracking-[-0.02em]">{meta.title}</h1>
+        <p className="text-xs text-[var(--muted)] mt-0.5">{meta.subtitle}</p>
       </div>
       <div className="flex items-center gap-3">
-        <div className="hidden sm:flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm text-[var(--muted)]">
-          <Search size={14} />
-          <span className="text-xs">Search SKU, channel, keyword…</span>
+        <div className="hidden sm:flex items-center gap-2 border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm text-[var(--muted)]">
+          <Search size={14} strokeWidth={1.5} />
+          <span className="text-xs">Search SKU, channel, keyword</span>
         </div>
-        <button className="relative rounded-lg border border-[var(--border)] bg-[var(--surface)] p-2 text-[var(--muted)]">
-          <Bell size={16} />
-          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
+        <button className="relative border border-[var(--border)] bg-[var(--surface)] p-2 text-[var(--muted)]">
+          <Bell size={16} strokeWidth={1.5} />
+          <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-[var(--accent)]" />
         </button>
-        <div className="h-8 w-8 rounded-full bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center text-xs font-semibold">
+        <div className="h-8 w-8 border border-[var(--ink)] flex items-center justify-center text-xs font-medium">
           DS
         </div>
       </div>

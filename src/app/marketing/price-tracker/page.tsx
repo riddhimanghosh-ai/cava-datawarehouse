@@ -40,7 +40,7 @@ export default function PriceTrackerPage() {
             placeholder="Label (optional)"
             className="w-40 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5 text-sm outline-none placeholder:text-[var(--muted)]"
           />
-          <button className="rounded-xl bg-[var(--accent)] text-black font-medium px-4 py-2.5 text-sm">+ Track Store</button>
+          <button className="rounded-xl bg-[var(--accent)] text-white font-medium px-4 py-2.5 text-sm">+ Track Store</button>
         </div>
         <p className="text-[11px] text-[var(--muted)] mt-2">
           Pulls the store&apos;s live catalog from its public <code className="text-[var(--foreground)]">/products.json</code> — title, price, compare-at & stock. Each rescan diffs against the last snapshot.
@@ -75,8 +75,8 @@ function StoreCard({ store }: { store: CompetitorStore }) {
       <div className="flex flex-wrap gap-2 mb-4">
         <span className="rounded-full bg-[var(--surface-2)] border border-[var(--border)] px-3 py-1 text-xs"><span className="text-[var(--foreground)] font-medium">{stats.productCount}</span> <span className="text-[var(--muted)]">products</span></span>
         <span className="rounded-full bg-[var(--surface-2)] border border-[var(--border)] px-3 py-1 text-xs"><span className="text-[var(--muted)]">Avg</span> <span className="text-[var(--foreground)] font-medium">{formatINR(stats.avgPrice)}</span></span>
-        <span className="rounded-full bg-orange-500/10 border border-orange-500/30 px-3 py-1 text-xs text-orange-400 font-medium">{stats.onSale} on sale</span>
-        <span className="rounded-full bg-red-500/10 border border-red-500/30 px-3 py-1 text-xs text-red-400 font-medium">{stats.soldOut} sold out</span>
+        <span className="rounded-full bg-[var(--warning)]/10 border border-[var(--warning)]/30 px-3 py-1 text-xs text-[var(--warning)] font-medium">{stats.onSale} on sale</span>
+        <span className="rounded-full bg-[var(--danger)]/10 border border-[var(--danger)]/30 px-3 py-1 text-xs text-[var(--danger)] font-medium">{stats.soldOut} sold out</span>
       </div>
 
       <div className="text-[11px] text-[var(--muted)] uppercase tracking-wide mb-2">Recent changes ({store.recentChanges.length})</div>
@@ -85,14 +85,14 @@ function StoreCard({ store }: { store: CompetitorStore }) {
           <div key={i} className="flex items-center gap-3 rounded-lg bg-[var(--surface-2)] px-3 py-2 text-sm">
             <span className={cx(
               "flex items-center gap-1 shrink-0 w-28 text-[11px] font-medium uppercase",
-              c.type === "new-launch" ? "text-[var(--accent)]" : c.type === "restocked" ? "text-sky-400" : c.type === "price-drop" ? "text-emerald-400" : c.type === "price-hike" ? "text-orange-400" : "text-red-400"
+              c.type === "new-launch" ? "text-[var(--accent)]" : c.type === "restocked" ? "text-[var(--muted)]" : c.type === "price-drop" ? "text-[var(--ok)]" : c.type === "price-hike" ? "text-[var(--warning)]" : "text-[var(--danger)]"
             )}>
               {CHANGE_ICON[c.type]}
               {c.type.replace("-", " ")}
             </span>
             <span className="flex-1 min-w-0 truncate">{c.productTitle}</span>
             {c.priceDelta !== null && (
-              <span className={cx("text-[11px]", c.priceDelta < 0 ? "text-emerald-400" : "text-orange-400")}>
+              <span className={cx("text-[11px]", c.priceDelta < 0 ? "text-[var(--ok)]" : "text-[var(--warning)]")}>
                 {c.priceDelta < 0 ? "" : "+"}{formatINR(c.priceDelta)}
               </span>
             )}

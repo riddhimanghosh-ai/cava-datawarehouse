@@ -12,9 +12,9 @@ const HORIZONS = [
 ];
 
 const ACTION_TONE_CLASSES: Record<string, string> = {
-  ok: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  warning: "bg-orange-500/15 text-orange-400 border-orange-500/30",
-  danger: "bg-red-500/15 text-red-400 border-red-500/30",
+  ok: "bg-[var(--ok)]/10 text-[var(--ok)] border-[var(--ok)]/30",
+  warning: "bg-[var(--warning)]/10 text-[var(--warning)] border-[var(--warning)]/30",
+  danger: "bg-[var(--danger)]/10 text-[var(--danger)] border-[var(--danger)]/30",
 };
 
 export default function ForecastingPage() {
@@ -101,7 +101,7 @@ export default function ForecastingPage() {
               className={cx(
                 "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
                 channels.has(c)
-                  ? "bg-[var(--accent)] text-black border-[var(--accent)]"
+                  ? "bg-[var(--accent)] text-white border-[var(--accent)]"
                   : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
               )}
             >
@@ -172,7 +172,7 @@ export default function ForecastingPage() {
                     <tr key={p.sku} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
                       <td className="py-2.5 px-5">
                         <span className="flex items-center gap-2">
-                          <span className={cx("h-7 w-7 rounded-lg flex items-center justify-center shrink-0", worst.action.tone === "danger" ? "bg-red-500/15 text-red-400" : "bg-orange-500/15 text-orange-400")}>
+                          <span className={cx("h-7 w-7 rounded-lg flex items-center justify-center shrink-0", worst.action.tone === "danger" ? "bg-[var(--danger)]/10 text-[var(--danger)]" : "bg-[var(--warning)]/10 text-[var(--warning)]")}>
                             <Factory size={14} />
                           </span>
                           <span className="font-medium">{p.name}</span>

@@ -80,7 +80,7 @@ export default function EventsPage() {
               return (
                 <div key={e.id} className="absolute h-7 flex items-center" style={{ top: i * 34, left: `${left}%`, width: `${width}%` }}>
                   <div
-                    className="h-full w-full rounded-md px-2 flex items-center text-[11px] font-medium text-black/85 truncate"
+                    className="h-full w-full rounded-md px-2 flex items-center text-[11px] font-medium text-white/85 truncate"
                     style={{ background: color }}
                     title={`${e.name} · ${fmtRange(e)}`}
                   >
@@ -115,7 +115,7 @@ export default function EventsPage() {
             onClick={() => setFilter(s)}
             className={cx(
               "flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium border transition-colors",
-              filter === s ? "bg-[var(--accent)] text-black border-[var(--accent)]" : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
+              filter === s ? "bg-[var(--accent)] text-white border-[var(--accent)]" : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
             )}
           >
             <span className="h-2 w-2 rounded-full" style={{ background: STATUS_DOT[s] }} />
@@ -212,14 +212,14 @@ function EventCard({ e, rank }: { e: BrandEvent; rank: number | null }) {
 type MetricKey = "revenue" | "ordersAov" | "topProducts" | "cvrAtc" | "funnel" | "engagement";
 
 const SALES_METRICS: { key: MetricKey; label: string }[] = [
-  { key: "revenue", label: "💰 Revenue" },
-  { key: "ordersAov", label: "📦 Orders & AOV" },
-  { key: "topProducts", label: "🏆 Top Products" },
+  { key: "revenue", label: "Revenue" },
+  { key: "ordersAov", label: "Orders & AOV" },
+  { key: "topProducts", label: "Top Products" },
 ];
 const SESSION_METRICS: { key: MetricKey; label: string }[] = [
-  { key: "cvrAtc", label: "🛒 CVR & ATC" },
-  { key: "funnel", label: "🔀 Full Funnel" },
-  { key: "engagement", label: "📊 Engagement" },
+  { key: "cvrAtc", label: "CVR & ATC" },
+  { key: "funnel", label: "Full Funnel" },
+  { key: "engagement", label: "Engagement" },
 ];
 
 function PullEventMetrics({ e }: { e: BrandEvent }) {
@@ -398,10 +398,10 @@ function NewEventForm({ onAdd }: { onAdd: (e: BrandEvent) => void }) {
 
       <Section label="Schedule">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="🟢 Start date *">
+          <Field label="Start date *">
             <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className={inputCls} />
           </Field>
-          <Field label="🔴 End date *">
+          <Field label="End date *">
             <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className={inputCls} />
           </Field>
         </div>
@@ -433,7 +433,7 @@ function NewEventForm({ onAdd }: { onAdd: (e: BrandEvent) => void }) {
                 onClick={() => setAudience(a)}
                 className={cx(
                   "rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors",
-                  audience === a ? "bg-[var(--accent)] text-black border-[var(--accent)]" : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
+                  audience === a ? "bg-[var(--accent)] text-white border-[var(--accent)]" : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
                 )}
               >
                 {a}
@@ -447,7 +447,7 @@ function NewEventForm({ onAdd }: { onAdd: (e: BrandEvent) => void }) {
       </Section>
 
       <div className="flex gap-2 mt-4">
-        <button onClick={submit} disabled={!title || !start || !end} className="rounded-xl bg-[var(--accent)] text-black font-medium px-5 py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+        <button onClick={submit} disabled={!title || !start || !end} className="rounded-xl bg-[var(--accent)] text-white font-medium px-5 py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed">
           Log Event
         </button>
       </div>

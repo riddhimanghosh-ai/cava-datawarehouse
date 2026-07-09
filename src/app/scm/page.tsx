@@ -146,7 +146,7 @@ export default function ScmPage() {
                               key={i}
                               className={cx(
                                 "flex-1 text-center rounded py-1 text-[10px] font-medium",
-                                v < 55 ? "bg-red-500/15 text-red-400" : v < 72 ? "bg-orange-500/15 text-orange-400" : v < 85 ? "bg-amber-500/15 text-amber-400" : "bg-emerald-500/15 text-emerald-400"
+                                v < 55 ? "bg-[var(--danger)]/10 text-[var(--danger)]" : v < 72 ? "bg-[var(--warning)]/10 text-[var(--warning)]" : v < 85 ? "bg-[var(--warning)]/10 text-[var(--warning)]" : "bg-[var(--ok)]/10 text-[var(--ok)]"
                               )}
                             >
                               {v.toFixed(0)}

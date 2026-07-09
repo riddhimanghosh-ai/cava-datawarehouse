@@ -38,7 +38,7 @@ export default function GoogleAnalyticsPage() {
       {tab === "overview" && (
         <div className="space-y-6">
           <div>
-            <h3 className="text-sm font-semibold mb-3">📊 Traffic & Engagement</h3>
+            <h3 className="text-sm font-semibold mb-3">Traffic & Engagement</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               {GA_TRAFFIC_KPIS.map((k) => (
                 <StatCard key={k.label} {...k} />
@@ -46,7 +46,7 @@ export default function GoogleAnalyticsPage() {
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-semibold mb-3">🛒 E-Commerce Performance</h3>
+            <h3 className="text-sm font-semibold mb-3">E-Commerce Performance</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               {GA_ECOMMERCE_KPIS.map((k) => (
                 <StatCard key={k.label} {...k} />
@@ -183,7 +183,7 @@ function FunnelCard({ title, subtitle, stages }: { title: string; subtitle: stri
             <div key={s.stage}>
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="flex items-center gap-2">
-                  <span className="h-5 w-5 rounded-full bg-[var(--accent)] text-black text-[11px] font-bold flex items-center justify-center">{i + 1}</span>
+                  <span className="h-5 w-5 rounded-full bg-[var(--accent)] text-white text-[11px] font-bold flex items-center justify-center">{i + 1}</span>
                   {s.stage}
                 </span>
                 <span className="text-[var(--muted)]">
@@ -215,7 +215,7 @@ function FunnelCard({ title, subtitle, stages }: { title: string; subtitle: stri
                   <td className="py-2.5 px-2">{formatNumber(s.count)}</td>
                   <td className="py-2.5 px-2">{s.pctOfPrevious === null ? "—" : `${s.pctOfPrevious}%`}</td>
                   <td className="py-2.5 px-2">
-                    <span className={cx("rounded-md px-1.5 py-0.5 text-[11px] font-medium", s.dropOffPct > 60 ? "bg-red-500/10 text-red-400" : s.dropOffPct > 0 ? "bg-orange-500/10 text-orange-400" : "bg-emerald-500/10 text-emerald-400")}>
+                    <span className={cx("rounded-md px-1.5 py-0.5 text-[11px] font-medium", s.dropOffPct > 60 ? "bg-[var(--danger)]/10 text-[var(--danger)]" : s.dropOffPct > 0 ? "bg-[var(--warning)]/10 text-[var(--warning)]" : "bg-[var(--ok)]/10 text-[var(--ok)]")}>
                       {s.dropOffPct}% drop-off
                     </span>
                   </td>

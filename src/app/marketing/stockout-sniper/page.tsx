@@ -6,16 +6,6 @@ import { Card, MultiSelect, passesFilter, FilterRow } from "@/components/ui";
 import { formatINR, cx } from "@/lib/format";
 import { allStockouts, COMPETITOR_STORES } from "@/lib/data";
 
-const CATEGORY_GRADIENT: Record<string, string> = {
-  Leggings: "linear-gradient(135deg,#1f2937,#4b5563)",
-  "Sports Bra": "linear-gradient(135deg,#6d28d9,#a78bfa)",
-  Joggers: "linear-gradient(135deg,#334155,#64748b)",
-  "Co-ord Set": "linear-gradient(135deg,#9d174d,#f472b6)",
-  Tees: "linear-gradient(135deg,#065f46,#34d399)",
-  Shorts: "linear-gradient(135deg,#92400e,#fbbf24)",
-  Outerwear: "linear-gradient(135deg,#1e3a8a,#60a5fa)",
-};
-
 export default function StockoutSniperPage() {
   const [store, setStore] = useState<Set<string>>(new Set());
   const [category, setCategory] = useState<Set<string>>(new Set());
@@ -44,7 +34,7 @@ export default function StockoutSniperPage() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-[var(--muted)]">Last scan {lastScan}d ago</span>
-          <button className="flex items-center gap-1.5 rounded-lg bg-[var(--accent)] text-black font-medium px-3.5 py-2 text-sm">
+          <button className="flex items-center gap-1.5 rounded-lg bg-[var(--accent)] text-white font-medium px-3.5 py-2 text-sm">
             <RefreshCw size={13} /> Scan all stores
           </button>
         </div>
@@ -66,13 +56,10 @@ export default function StockoutSniperPage() {
             return (
               <div
                 key={s.product.id}
-                className="flex items-center gap-4 rounded-xl border border-[var(--warning)]/25 bg-[var(--warning)]/[0.06] px-4 py-3"
+                className="flex items-center gap-4 border border-[var(--warning)]/25 bg-[var(--warning)]/[0.05] px-4 py-3"
               >
-                <div
-                  className="h-12 w-12 rounded-lg shrink-0 flex items-center justify-center text-white/70"
-                  style={{ background: CATEGORY_GRADIENT[s.product.category] ?? "linear-gradient(135deg,#334155,#64748b)" }}
-                >
-                  <Shirt size={18} />
+                <div className="h-12 w-12 shrink-0 flex items-center justify-center border border-[var(--ink)] text-[var(--foreground)]">
+                  <Shirt size={18} strokeWidth={1.5} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold leading-tight truncate">{s.product.title}</div>

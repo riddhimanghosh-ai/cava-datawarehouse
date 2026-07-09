@@ -5,6 +5,7 @@ import { Bell, Search } from "lucide-react";
 
 const TITLES: Record<string, { title: string; subtitle: string }> = {
   "/": { title: "Overview", subtitle: "Cross-channel health at a glance" },
+  "/assistant": { title: "Ask AI", subtitle: "Query your data warehouse in plain English" },
   "/sales/primary-secondary": { title: "Primary & Secondary Sales", subtitle: "Sell-in vs. sell-through, and the gap between them" },
   "/sales/daily-report": { title: "Daily Sales Report", subtitle: "MTD performance vs. plan, forecast, LM & LY, plus offtake" },
   "/inventory": { title: "Inventory", subtitle: "SKU-level stock health, reorder recommendations" },

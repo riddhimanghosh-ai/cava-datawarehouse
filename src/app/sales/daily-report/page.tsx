@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRightLeft, Calendar, Layers, Network, Package, ShoppingBag, Store } from "lucide-react";
-import { Card, CardHeader, StatCard, IconTile, Pills, ProgressBar, MultiSelect, passesFilter, FilterRow, FilterBox } from "@/components/ui";
+import { ArrowRightLeft, Boxes, Layers, Package, ShoppingBag, Store } from "lucide-react";
+import { Card, CardHeader, StatCard, IconTile, Pills, ProgressBar, MultiSelect, passesFilter, FilterRow } from "@/components/ui";
 import { formatINR, formatPct, cx } from "@/lib/format";
 import {
   DSR_CHANNEL_GROUPS,
@@ -10,7 +10,10 @@ import {
   OFFTAKE_CURRENT,
   OFFTAKE_PREVIOUS,
   OFFTAKE_CATEGORY_LIST,
+  CHANNEL_GROUP_MAP,
   ChannelGroup,
+  CHANNELS,
+  PRODUCTS,
 } from "@/lib/data";
 
 const GROUP_ICON: Record<ChannelGroup, React.ReactNode> = {
@@ -19,28 +22,36 @@ const GROUP_ICON: Record<ChannelGroup, React.ReactNode> = {
   D2C: <Store size={16} />,
 };
 
-const MONTH_OPTS = [
-  { value: "jul", label: "Jul'26 (MTD)" },
-  { value: "jun", label: "Jun'26" },
-];
-
 function lakh(v: number) {
   return formatINR(v * 100000, true);
 }
 
 export default function DailySalesReportPage() {
   const allTotals = dsrTotals();
-  const [month, setMonth] = useState("jul");
-  const [groups, setGroups] = useState<Set<string>>(new Set());
+  const [channels, setChannels] = useState<Set<string>>(new Set());
+  const [category, setCategory] = useState<Set<string>>(new Set());
+  const [sku, setSku] = useState<Set<string>>(new Set());
 
-  const dsrGroups = DSR_CHANNEL_GROUPS.filter((g) => passesFilter(groups, g.group));
+  const categories = Array.from(new Set(PRODUCTS.map((p) => p.category)));
+  const skuOptions = PRODUCTS.filter((p) => passesFilter(category, p.category));
+
+  // Map the selected exact channels up to their channel groups so the
+  // group-level DSR table reflects the channel filter.
+  const selectedGroups = new Set<string>();
+  if (channels.size > 0) {
+    (Object.keys(CHANNEL_GROUP_MAP) as ChannelGroup[]).forEach((g) => {
+      if (CHANNEL_GROUP_MAP[g].some((c) => channels.has(c))) selectedGroups.add(g);
+    });
+  }
+  const dsrGroups = DSR_CHANNEL_GROUPS.filter((g) => passesFilter(selectedGroups, g.group));
   const totals = allTotals;
 
   return (
     <div className="space-y-6">
       <FilterRow>
-        <FilterBox label="Month" icon={<Calendar size={12} />} value={month} onChange={setMonth} options={MONTH_OPTS} />
-        <MultiSelect label="Channel group" icon={<Network size={12} />} selected={groups} onChange={setGroups} options={DSR_CHANNEL_GROUPS.map((g) => ({ value: g.group, label: g.group }))} />
+        <MultiSelect label="Channel" icon={<Store size={12} />} selected={channels} onChange={setChannels} options={CHANNELS.map((c) => ({ value: c, label: c }))} />
+        <MultiSelect label="Category" icon={<Layers size={12} />} selected={category} onChange={(n) => { setCategory(n); setSku(new Set()); }} options={categories.map((c) => ({ value: c, label: c }))} />
+        <MultiSelect label="SKU Name" icon={<Boxes size={12} />} selected={sku} onChange={setSku} options={skuOptions.map((p) => ({ value: p.sku, label: p.name }))} />
       </FilterRow>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -111,15 +122,18 @@ export default function DailySalesReportPage() {
         </div>
       </Card>
 
-      <OfftakeCard />
+      <OfftakeCard channels={channels} categoryFilter={category} />
     </div>
   );
 }
 
-function OfftakeCard() {
+function OfftakeCard({ channels, categoryFilter }: { channels: Set<string>; categoryFilter: Set<string> }) {
   const [tillView, setTillView] = useState<"current" | "previous">("current");
-  const rows = tillView === "current" ? OFFTAKE_CURRENT : OFFTAKE_PREVIOUS;
-  const compareRows = tillView === "current" ? OFFTAKE_PREVIOUS : OFFTAKE_CURRENT;
+  const rowsAll = tillView === "current" ? OFFTAKE_CURRENT : OFFTAKE_PREVIOUS;
+  const compareAll = tillView === "current" ? OFFTAKE_PREVIOUS : OFFTAKE_CURRENT;
+  const rows = rowsAll.filter((r) => passesFilter(channels, r.channel));
+  const compareRows = compareAll.filter((r) => passesFilter(channels, r.channel));
+  const cats = OFFTAKE_CATEGORY_LIST.filter((c) => passesFilter(categoryFilter, c));
 
   return (
     <Card>
@@ -139,24 +153,26 @@ function OfftakeCard() {
           <thead>
             <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
               <th className="py-2 px-5 font-medium">Channel</th>
-              {OFFTAKE_CATEGORY_LIST.map((c) => (
+              {cats.map((c) => (
                 <th key={c} className="py-2 px-2 font-medium">{c}</th>
               ))}
               <th className="py-2 px-2 font-medium">Total</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, idx) => {
-              const compare = compareRows[idx];
-              const deltaPct = ((r.total - compare.total) / compare.total) * 100;
+            {rows.map((r) => {
+              const rowTotal = cats.reduce((s, c) => s + r.byCategory[c], 0);
+              const compare = compareRows.find((cr) => cr.channel === r.channel);
+              const compareTotal = compare ? cats.reduce((s, c) => s + compare.byCategory[c], 0) : rowTotal;
+              const deltaPct = compareTotal ? ((rowTotal - compareTotal) / compareTotal) * 100 : 0;
               return (
                 <tr key={r.channel} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
                   <td className="py-2.5 px-5 font-medium">{r.channel}</td>
-                  {OFFTAKE_CATEGORY_LIST.map((c) => (
+                  {cats.map((c) => (
                     <td key={c} className="py-2.5 px-2 text-[var(--muted)]">{formatINR(r.byCategory[c], true)}</td>
                   ))}
                   <td className="py-2.5 px-2 font-medium flex items-center gap-1.5">
-                    {formatINR(r.total, true)}
+                    {formatINR(rowTotal, true)}
                     <span className={cx("text-[11px] flex items-center gap-0.5", deltaPct >= 0 ? "text-[var(--ok)]" : "text-[var(--danger)]")}>
                       <ArrowRightLeft size={10} />
                       {formatPct(deltaPct)}
@@ -165,12 +181,15 @@ function OfftakeCard() {
                 </tr>
               );
             })}
+            {rows.length === 0 && (
+              <tr><td colSpan={cats.length + 2} className="py-6 text-center text-[var(--muted)]">No channels match this filter.</td></tr>
+            )}
             <tr className="font-semibold border-t border-[var(--border)]">
               <td className="py-2.5 px-5">Total</td>
-              {OFFTAKE_CATEGORY_LIST.map((c) => (
+              {cats.map((c) => (
                 <td key={c} className="py-2.5 px-2">{formatINR(rows.reduce((s, r) => s + r.byCategory[c], 0), true)}</td>
               ))}
-              <td className="py-2.5 px-2">{formatINR(rows.reduce((s, r) => s + r.total, 0), true)}</td>
+              <td className="py-2.5 px-2">{formatINR(rows.reduce((s, r) => s + cats.reduce((a, c) => a + r.byCategory[c], 0), 0), true)}</td>
             </tr>
           </tbody>
         </table>

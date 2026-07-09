@@ -159,6 +159,58 @@ export function eventDurationDays(e: BrandEvent): number {
   return Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1);
 }
 
+// Pull-on-demand metrics for a single ended event, derived deterministically
+// from its own revenue so the numbers stay stable and internally consistent.
+export interface EventMetrics {
+  revenue: { gross: number; net: number; returns: number };
+  ordersAov: { orders: number; aov: number; units: number };
+  topProducts: { name: string; revenue: number }[];
+  cvrAtc: { cvrPct: number; addToCarts: number; checkouts: number };
+  funnel: { sessions: number; addToCart: number; checkout: number; purchase: number };
+  engagement: { sessions: number; avgDuration: string; bouncePct: number; pageviews: number };
+}
+
+const TOP_PRODUCT_POOL = [
+  "Sculpt High-Waist Legging – Jet Black",
+  "Power Hold Sports Bra – Black",
+  "Power Hold Sports Bra – Electric Lime",
+  "Core Co-ord Set – Black",
+  "Flex Seamless Legging – Nude Blush",
+  "Cloud Fleece Jogger – Heather Grey",
+];
+
+export function eventMetrics(e: BrandEvent): EventMetrics {
+  const gross = e.actualRevenue || Math.round(e.eventDailyRevenue * eventDurationDays(e));
+  const returns = -Math.round(gross * 0.0055);
+  const net = Math.round(gross * 0.52) + returns;
+  const aov = 1750 + (e.name.charCodeAt(0) % 9) * 60;
+  const orders = Math.max(1, Math.round(gross / aov));
+  const units = Math.round(orders * 1.86);
+  const seed = e.id.split("").reduce((s, c) => s + c.charCodeAt(0), 0);
+  const topProducts = [0, 1, 2].map((i) => ({
+    name: TOP_PRODUCT_POOL[(seed + i) % TOP_PRODUCT_POOL.length],
+    revenue: Math.round(gross * [0.34, 0.22, 0.14][i]),
+  }));
+  const purchase = orders;
+  const checkout = Math.round(purchase / 0.31);
+  const addToCart = Math.round(checkout / 0.35);
+  const sessions = Math.round(addToCart / 0.114);
+  const cvrPct = Math.round((purchase / sessions) * 10000) / 100;
+  return {
+    revenue: { gross, net, returns },
+    ordersAov: { orders, aov, units },
+    topProducts,
+    cvrAtc: { cvrPct, addToCarts: addToCart, checkouts: checkout },
+    funnel: { sessions, addToCart, checkout, purchase },
+    engagement: {
+      sessions,
+      avgDuration: `${1 + (seed % 2)}m ${10 + (seed % 40)}s`,
+      bouncePct: 32 + (seed % 12),
+      pageviews: Math.round(sessions * 2.7),
+    },
+  };
+}
+
 export function eventsSummary() {
   const ended = BRAND_EVENTS.filter((e) => e.status === "ended");
   const upcoming = BRAND_EVENTS.filter((e) => e.status === "upcoming");

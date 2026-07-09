@@ -5,9 +5,13 @@ import {
   Boxes,
   Factory,
   Megaphone,
+  Sparkles,
 } from "lucide-react";
 
-export const TOP_LEVEL = [{ href: "/", label: "Overview", icon: LayoutDashboard }];
+export const TOP_LEVEL = [
+  { href: "/", label: "Overview", icon: LayoutDashboard },
+  { href: "/assistant", label: "Ask AI", icon: Sparkles },
+];
 
 export const GROUPS = [
   {

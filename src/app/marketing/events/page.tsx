@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarClock, Plus, Target, TrendingUp, Trophy, X } from "lucide-react";
+import { BarChart3, CalendarClock, ChevronDown, Plus, Target, TrendingUp, Trophy, X } from "lucide-react";
 import { Card, CardHeader, Badge, ProgressBar } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
-import { BRAND_EVENTS, BrandEvent, EventType, eventDurationDays, eventLiftPct, eventTargetPct } from "@/lib/data";
+import { BRAND_EVENTS, BrandEvent, EventType, eventDurationDays, eventLiftPct, eventMetrics, eventTargetPct } from "@/lib/data";
 
 const TODAY = new Date("2026-07-09T00:00:00Z");
 
@@ -201,9 +201,132 @@ function EventCard({ e, rank }: { e: BrandEvent; rank: number | null }) {
               <ProgressBar pct={targetPct} tone={targetPct >= 100 ? "ok" : targetPct >= 80 ? "accent" : "danger"} />
             </div>
           )}
+          <PullEventMetrics e={e} />
         </>
       )}
       <p className="text-[11px] text-[var(--muted)] mt-2.5">{e.note}</p>
+    </div>
+  );
+}
+
+type MetricKey = "revenue" | "ordersAov" | "topProducts" | "cvrAtc" | "funnel" | "engagement";
+
+const SALES_METRICS: { key: MetricKey; label: string }[] = [
+  { key: "revenue", label: "💰 Revenue" },
+  { key: "ordersAov", label: "📦 Orders & AOV" },
+  { key: "topProducts", label: "🏆 Top Products" },
+];
+const SESSION_METRICS: { key: MetricKey; label: string }[] = [
+  { key: "cvrAtc", label: "🛒 CVR & ATC" },
+  { key: "funnel", label: "🔀 Full Funnel" },
+  { key: "engagement", label: "📊 Engagement" },
+];
+
+function PullEventMetrics({ e }: { e: BrandEvent }) {
+  const [open, setOpen] = useState(false);
+  const [metric, setMetric] = useState<MetricKey>("revenue");
+  const m = eventMetrics(e);
+
+  return (
+    <div className="mt-3 pt-3 border-t border-[var(--border)]">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent)]/15 text-[var(--accent)] px-3 py-1.5 text-xs font-medium"
+      >
+        <BarChart3 size={13} /> Pull Event Metrics
+        <ChevronDown size={13} className={cx("transition-transform", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="mt-3">
+          <div className="text-[10px] uppercase tracking-wider text-[var(--muted)] font-semibold mb-1.5">Sales</div>
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {SALES_METRICS.map((mt) => (
+              <MetricPill key={mt.key} label={mt.label} active={metric === mt.key} onClick={() => setMetric(mt.key)} />
+            ))}
+          </div>
+          <div className="text-[10px] uppercase tracking-wider text-[var(--muted)] font-semibold mb-1.5">Sessions</div>
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {SESSION_METRICS.map((mt) => (
+              <MetricPill key={mt.key} label={mt.label} active={metric === mt.key} onClick={() => setMetric(mt.key)} />
+            ))}
+          </div>
+
+          <div className="text-[11px] text-[var(--muted)] italic mb-2">Showing data for {fmtRange(e)}</div>
+          <MetricPanel metric={metric} m={m} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MetricPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cx(
+        "rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors",
+        active ? "bg-[var(--accent)]/20 border-[var(--accent)]/40 text-[var(--accent)]" : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function MetricPanel({ metric, m }: { metric: MetricKey; m: ReturnType<typeof eventMetrics> }) {
+  if (metric === "topProducts") {
+    return (
+      <div className="space-y-2">
+        {m.topProducts.map((p, i) => (
+          <div key={i} className="flex items-center justify-between rounded-lg bg-[var(--surface)] px-3 py-2">
+            <span className="text-sm">{i + 1}. {p.name}</span>
+            <span className="text-sm font-semibold">{formatINR(p.revenue, true)}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  const cells: { label: string; value: string; tone?: "danger" }[] =
+    metric === "revenue"
+      ? [
+          { label: "Gross Revenue", value: formatINR(m.revenue.gross) },
+          { label: "Net Revenue", value: formatINR(m.revenue.net) },
+          { label: "Returns", value: formatINR(m.revenue.returns), tone: "danger" },
+        ]
+      : metric === "ordersAov"
+      ? [
+          { label: "Orders", value: formatNumber(m.ordersAov.orders) },
+          { label: "AOV", value: formatINR(m.ordersAov.aov) },
+          { label: "Units Sold", value: formatNumber(m.ordersAov.units) },
+        ]
+      : metric === "cvrAtc"
+      ? [
+          { label: "Conversion Rate", value: `${m.cvrAtc.cvrPct}%` },
+          { label: "Add to Carts", value: formatNumber(m.cvrAtc.addToCarts) },
+          { label: "Checkouts", value: formatNumber(m.cvrAtc.checkouts) },
+        ]
+      : metric === "funnel"
+      ? [
+          { label: "Sessions", value: formatNumber(m.funnel.sessions) },
+          { label: "Add to Cart", value: formatNumber(m.funnel.addToCart) },
+          { label: "Checkout", value: formatNumber(m.funnel.checkout) },
+          { label: "Purchase", value: formatNumber(m.funnel.purchase) },
+        ]
+      : [
+          { label: "Sessions", value: formatNumber(m.engagement.sessions) },
+          { label: "Avg Duration", value: m.engagement.avgDuration },
+          { label: "Bounce Rate", value: `${m.engagement.bouncePct}%` },
+          { label: "Pageviews", value: formatNumber(m.engagement.pageviews) },
+        ];
+  return (
+    <div className={cx("grid gap-3", cells.length === 4 ? "grid-cols-2 md:grid-cols-4" : "grid-cols-1 sm:grid-cols-3")}>
+      {cells.map((c) => (
+        <div key={c.label} className="rounded-lg bg-[var(--surface)] px-3 py-2.5">
+          <div className="text-[10px] uppercase tracking-wider text-[var(--muted)] font-semibold">{c.label}</div>
+          <div className={cx("text-lg font-bold mt-1", c.tone === "danger" && "text-[var(--danger)]")}>{c.value}</div>
+        </div>
+      ))}
     </div>
   );
 }

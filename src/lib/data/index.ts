@@ -13,3 +13,4 @@ export * from "./events";
 export * from "./socialComments";
 export * from "./competitorCatalog";
 export * from "./webAnalytics";
+export * from "./assistant";

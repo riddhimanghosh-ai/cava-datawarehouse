@@ -1,17 +1,26 @@
 "use client";
 
-import { CalendarClock, Target, TrendingUp, Trophy } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, ProgressBar, IconTile } from "@/components/ui";
+import { useState } from "react";
+import { CalendarClock, Layers, Target, TrendingUp, Trophy } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, ProgressBar, IconTile, MultiSelect, passesFilter, FilterRow } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import { BRAND_EVENTS, BrandEvent, eventDurationDays, eventLiftPct, eventsSummary, eventTargetPct } from "@/lib/data";
 
 export default function EventsPage() {
   const summary = eventsSummary();
-  const upcoming = BRAND_EVENTS.filter((e) => e.status === "upcoming");
-  const ended = [...BRAND_EVENTS.filter((e) => e.status === "ended")].sort((a, b) => eventLiftPct(b) - eventLiftPct(a));
+  const [types, setTypes] = useState<Set<string>>(new Set());
+  const eventTypes = Array.from(new Set(BRAND_EVENTS.map((e) => e.type)));
+
+  const filtered = BRAND_EVENTS.filter((e) => passesFilter(types, e.type));
+  const upcoming = filtered.filter((e) => e.status === "upcoming");
+  const ended = [...filtered.filter((e) => e.status === "ended")].sort((a, b) => eventLiftPct(b) - eventLiftPct(a));
 
   return (
     <div className="space-y-6">
+      <FilterRow>
+        <MultiSelect label="Event type" icon={<Layers size={12} />} selected={types} onChange={setTypes} options={eventTypes.map((t) => ({ value: t, label: t }))} />
+      </FilterRow>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Events logged (ended)" value={`${summary.endedCount}`} />
         <StatCard label="Avg revenue lift vs baseline" value={`${summary.avgLift >= 0 ? "+" : ""}${summary.avgLift}%`} tone={summary.avgLift >= 0 ? "ok" : "danger"} />

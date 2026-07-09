@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, Boxes, Factory, Layers } from "lucide-react";
-import { Card, CardHeader, StatCard, FilterBox, FilterRow } from "@/components/ui";
+import { AlertTriangle, Boxes, Calendar, Factory, Layers } from "lucide-react";
+import { Card, CardHeader, StatCard, FilterBox, FilterRow, MultiSelect, passesFilter } from "@/components/ui";
 import { formatNumber, cx } from "@/lib/format";
-import { CHANNELS, Channel, DEMAND_PLANS, DEMAND_PLAN_MONTHS, demandPlanFor } from "@/lib/data";
+import { CHANNELS, Channel, DEMAND_PLANS, demandPlanFor, PRODUCTS } from "@/lib/data";
 
 const HORIZONS = [
   { value: "3", label: "3 months forecast" },
@@ -19,15 +19,19 @@ const ACTION_TONE_CLASSES: Record<string, string> = {
 
 export default function ForecastingPage() {
   const [horizon, setHorizon] = useState("6");
+  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
   const [sku, setSku] = useState(DEMAND_PLANS[0].sku);
-  const [month, setMonth] = useState("All");
+  const [months, setMonths] = useState<Set<string>>(new Set());
   const [channels, setChannels] = useState<Set<Channel>>(new Set(CHANNELS));
+
+  const categories = Array.from(new Set(PRODUCTS.map((p) => p.category)));
+  const skuOptions = DEMAND_PLANS.filter((p) => passesFilter(categoryFilter, p.category));
 
   const plan = demandPlanFor(sku);
   const visibleMonths = useMemo(() => {
     const rows = plan.months.slice(0, Number(horizon));
-    return month === "All" ? rows : rows.filter((r) => r.month === month);
-  }, [plan, horizon, month]);
+    return months.size === 0 ? rows : rows.filter((r) => months.has(r.month));
+  }, [plan, horizon, months]);
 
   const toggleChannel = (c: Channel) => {
     setChannels((prev) => {
@@ -58,18 +62,30 @@ export default function ForecastingPage() {
             onChange={setHorizon}
             options={HORIZONS}
           />
+          <MultiSelect
+            label="Category"
+            icon={<Layers size={12} />}
+            selected={categoryFilter}
+            onChange={(n) => {
+              setCategoryFilter(n);
+              const opts = DEMAND_PLANS.filter((p) => passesFilter(n, p.category));
+              if (opts.length && !opts.some((p) => p.sku === sku)) setSku(opts[0].sku);
+            }}
+            options={categories.map((c) => ({ value: c, label: c }))}
+          />
           <FilterBox
             label="SKU"
             icon={<Boxes size={12} />}
             value={sku}
             onChange={setSku}
-            options={DEMAND_PLANS.map((p) => ({ value: p.sku, label: p.name }))}
+            options={skuOptions.map((p) => ({ value: p.sku, label: p.name }))}
           />
-          <FilterBox
+          <MultiSelect
             label="Month"
-            value={month}
-            onChange={setMonth}
-            options={[{ value: "All", label: "All months" }, ...plan.months.slice(0, Number(horizon)).map((m) => ({ value: m.month, label: m.month }))]}
+            icon={<Calendar size={12} />}
+            selected={months}
+            onChange={setMonths}
+            options={plan.months.slice(0, Number(horizon)).map((m) => ({ value: m.month, label: m.month }))}
           />
         </FilterRow>
 

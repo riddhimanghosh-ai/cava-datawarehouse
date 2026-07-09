@@ -1,6 +1,8 @@
+"use client";
+
 import { cx } from "@/lib/format";
-import { ArrowDownRight, ArrowUpRight, ChevronDown } from "lucide-react";
-import { ReactNode } from "react";
+import { ArrowDownRight, ArrowUpRight, Check, ChevronDown } from "lucide-react";
+import { ReactNode, useState } from "react";
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
   return (
@@ -216,6 +218,92 @@ export function FilterBox({
 
 export function FilterRow({ children }: { children: ReactNode }) {
   return <div className="flex flex-wrap items-stretch gap-3 mb-6">{children}</div>;
+}
+
+// Multi-select checkbox dropdown. `selected` is the set of chosen values;
+// an empty set is treated as "All". Used for channel / category / SKU filters.
+export function MultiSelect({
+  label,
+  icon,
+  options,
+  selected,
+  onChange,
+  allLabel = "All",
+}: {
+  label: string;
+  icon?: ReactNode;
+  options: { value: string; label: string }[];
+  selected: Set<string>;
+  onChange: (next: Set<string>) => void;
+  allLabel?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const isAll = selected.size === 0 || selected.size === options.length;
+  const display = isAll
+    ? allLabel
+    : selected.size === 1
+    ? options.find((o) => selected.has(o.value))?.label ?? `${selected.size} selected`
+    : `${selected.size} selected`;
+
+  const toggle = (v: string) => {
+    const next = new Set(selected);
+    next.has(v) ? next.delete(v) : next.add(v);
+    onChange(next);
+  };
+
+  return (
+    <div className="relative min-w-[180px]">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full text-left rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5"
+      >
+        <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)] mb-1">
+          {icon}
+          {label}
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium truncate">{display}</span>
+          <ChevronDown size={13} className="text-[var(--muted)] shrink-0 ml-2" />
+        </div>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
+          <div className="absolute z-30 mt-1 w-full min-w-[200px] max-h-72 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-1 shadow-xl">
+            <button
+              onClick={() => onChange(new Set())}
+              className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[var(--muted)] hover:bg-[var(--surface)]"
+            >
+              <span className={cx("h-4 w-4 rounded border flex items-center justify-center", isAll ? "bg-[var(--accent)] border-[var(--accent)]" : "border-[var(--border)]")}>
+                {isAll && <Check size={11} className="text-black" />}
+              </span>
+              {allLabel}
+            </button>
+            {options.map((o) => {
+              const checked = !isAll && selected.has(o.value);
+              return (
+                <button
+                  key={o.value}
+                  onClick={() => toggle(o.value)}
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm hover:bg-[var(--surface)]"
+                >
+                  <span className={cx("h-4 w-4 rounded border flex items-center justify-center shrink-0", checked ? "bg-[var(--accent)] border-[var(--accent)]" : "border-[var(--border)]")}>
+                    {checked && <Check size={11} className="text-black" />}
+                  </span>
+                  <span className="truncate text-left">{o.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Helper: does a row's value pass a multi-select filter? Empty set = all.
+export function passesFilter(selected: Set<string>, value: string): boolean {
+  return selected.size === 0 || selected.has(value);
 }
 
 export function Pills<T extends string>({

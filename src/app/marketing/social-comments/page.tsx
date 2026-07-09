@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MessageSquare, ShoppingCart, Clock } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, IconTile, Pills } from "@/components/ui";
+import { MessageSquare, Megaphone, ShoppingCart, Clock } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, IconTile, Pills, MultiSelect, passesFilter, FilterRow } from "@/components/ui";
 import { cx } from "@/lib/format";
 import { SOCIAL_ADS, SOCIAL_COMMENTS, SocialComment, commentsSummary } from "@/lib/data";
 
@@ -11,11 +11,13 @@ type SentFilter = "all" | "positive" | "negative" | "neutral" | "intent";
 export default function SocialCommentsPage() {
   const summary = commentsSummary();
   const [sentiment, setSentiment] = useState<SentFilter>("intent");
-  const [ad, setAd] = useState<string>("All");
+  const [ads, setAds] = useState<Set<string>>(new Set());
+  const [platforms, setPlatforms] = useState<Set<string>>(new Set());
 
   const comments = useMemo(() => {
     return SOCIAL_COMMENTS.filter((c) => {
-      if (ad !== "All" && c.ad !== ad) return false;
+      if (!passesFilter(ads, c.ad)) return false;
+      if (!passesFilter(platforms, c.platform)) return false;
       if (sentiment === "intent") return c.purchaseIntent;
       if (sentiment !== "all") return c.sentiment === sentiment;
       return true;
@@ -25,7 +27,7 @@ export default function SocialCommentsPage() {
       const bScore = (b.purchaseIntent && !b.answered ? 1000 : 0) + b.ageHours;
       return bScore - aScore;
     });
-  }, [sentiment, ad]);
+  }, [sentiment, ads, platforms]);
 
   const oldestUnanswered = SOCIAL_COMMENTS.filter((c) => c.purchaseIntent && !c.answered).sort((a, b) => b.ageHours - a.ageHours)[0];
 
@@ -53,6 +55,10 @@ export default function SocialCommentsPage() {
       )}
 
       <Card>
+        <FilterRow>
+          <MultiSelect label="Ad" icon={<Megaphone size={12} />} selected={ads} onChange={setAds} options={SOCIAL_ADS.map((a) => ({ value: a, label: a.split(" – ")[0] }))} />
+          <MultiSelect label="Platform" selected={platforms} onChange={setPlatforms} options={[{ value: "Instagram", label: "Instagram" }, { value: "Facebook", label: "Facebook" }]} />
+        </FilterRow>
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <CardHeader title="Comment triage" subtitle={`${comments.length} comments · AI sentiment (Claude Haiku) across English, Hindi & Hinglish`} />
           <Pills
@@ -65,13 +71,6 @@ export default function SocialCommentsPage() {
             ]}
             value={sentiment}
             onChange={(v) => setSentiment(v as SentFilter)}
-          />
-        </div>
-        <div className="mb-5">
-          <Pills
-            options={[{ value: "All", label: "All ads" }, ...SOCIAL_ADS.map((a) => ({ value: a, label: a.split(" – ")[0] }))]}
-            value={ad}
-            onChange={setAd}
           />
         </div>
 

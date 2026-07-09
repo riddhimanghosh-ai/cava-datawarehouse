@@ -1,34 +1,43 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, Pills, IconTile } from "@/components/ui";
+import { Layers, Sparkles, Store } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, MultiSelect, passesFilter, FilterRow, FilterBox, IconTile } from "@/components/ui";
 import { formatINR } from "@/lib/format";
 import { allNewLaunches, COMPETITOR_STORES } from "@/lib/data";
 
+const HORIZONS = [
+  { value: "30", label: "Last 30 days" },
+  { value: "60", label: "Last 60 days" },
+  { value: "90", label: "Last 90 days" },
+];
+
 export default function NewLaunchesPage() {
-  const [store, setStore] = useState<string>("All");
-  const launches = allNewLaunches(21).filter((l) => store === "All" || l.store === store);
+  const [store, setStore] = useState<Set<string>>(new Set());
+  const [category, setCategory] = useState<Set<string>>(new Set());
+  const [horizon, setHorizon] = useState("30");
+  const categories = Array.from(new Set(COMPETITOR_STORES.flatMap((s) => s.products.map((p) => p.category))));
+  const launches = allNewLaunches(Number(horizon))
+    .filter((l) => passesFilter(store, l.store))
+    .filter((l) => passesFilter(category, l.product.category));
   const last7 = allNewLaunches(7).length;
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="New launches (last 7 days)" value={`${last7}`} tone="ok" />
-        <StatCard label="New launches (last 21 days)" value={`${allNewLaunches(21).length}`} />
+        <StatCard label={`New launches (last ${horizon} days)`} value={`${allNewLaunches(Number(horizon)).length}`} />
         <StatCard label="Stores watched" value={`${COMPETITOR_STORES.length}`} />
         <StatCard label="Already in stock" value={`${launches.filter((l) => l.product.stock === "in-stock").length}`} />
       </div>
 
       <Card>
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <CardHeader title="New Launch Detector" subtitle="Products that appeared since the last scan, by published_at — your decision window before their organic reach kicks in" />
-          <Pills
-            options={[{ value: "All", label: "All stores" }, ...COMPETITOR_STORES.map((s) => ({ value: s.name, label: s.name }))]}
-            value={store}
-            onChange={setStore}
-          />
-        </div>
+        <FilterRow>
+          <FilterBox label="Window" value={horizon} onChange={setHorizon} options={HORIZONS} />
+          <MultiSelect label="Store" icon={<Store size={12} />} selected={store} onChange={setStore} options={COMPETITOR_STORES.map((s) => ({ value: s.name, label: s.name }))} />
+          <MultiSelect label="Category" icon={<Layers size={12} />} selected={category} onChange={setCategory} options={categories.map((c) => ({ value: c, label: c }))} />
+        </FilterRow>
+        <CardHeader title="New Launch Detector" subtitle="Products that appeared since the last scan, by published_at — your decision window before their organic reach kicks in" />
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {launches.map((l) => (
             <div key={l.product.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">

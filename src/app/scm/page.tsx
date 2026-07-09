@@ -1,11 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Boxes, Calendar, ChevronDown, ChevronRight, Gauge, Layers, Radar, Tag } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, ProgressBar, Pills, FilterBox, FilterRow, SwatchDot, IconTile } from "@/components/ui";
+import { Boxes, Calendar, ChevronDown, ChevronRight, Gauge, Layers, Radar, Store, Tag } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, ProgressBar, Pills, FilterBox, FilterRow, MultiSelect, passesFilter, SwatchDot, IconTile } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import {
-  Category,
   CHANNELS,
   Channel,
   PRODUCTS,
@@ -27,15 +26,15 @@ function dohTone(doh: number): "danger" | "warning" | "ok" | "accent" {
 export default function ScmPage() {
   const osaSum = osaSummary();
   const [expanded, setExpanded] = useState<Set<Channel>>(new Set());
-  const [channelFilter, setChannelFilter] = useState<Channel | "All">("All");
-  const [categoryFilter, setCategoryFilter] = useState<Category | "All">("All");
-  const [skuFilter, setSkuFilter] = useState<string>("All");
+  const [channelFilter, setChannelFilter] = useState<Set<string>>(new Set());
+  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
+  const [skuFilter, setSkuFilter] = useState<Set<string>>(new Set());
   const total = sohTotal();
 
   const categories = Array.from(new Set(PRODUCTS.map((p) => p.category)));
-  const skuOptions = PRODUCTS.filter((p) => categoryFilter === "All" || p.category === categoryFilter);
+  const skuOptions = PRODUCTS.filter((p) => passesFilter(categoryFilter, p.category));
 
-  const channelRows = channelFilter === "All" ? sohByChannel() : sohByChannel().filter((r) => r.key === channelFilter);
+  const channelRows = sohByChannel().filter((r) => passesFilter(channelFilter, r.key));
 
   const toggle = (c: Channel) => {
     setExpanded((prev) => {
@@ -47,9 +46,9 @@ export default function ScmPage() {
 
   const osaRows = useMemo(() => {
     return OSA.filter((r) => r.priority !== "Healthy")
-      .filter((r) => channelFilter === "All" || r.channel === channelFilter)
-      .filter((r) => skuFilter === "All" || r.sku === skuFilter)
-      .filter((r) => categoryFilter === "All" || PRODUCTS.find((p) => p.sku === r.sku)?.category === categoryFilter)
+      .filter((r) => passesFilter(channelFilter, r.channel))
+      .filter((r) => passesFilter(skuFilter, r.sku))
+      .filter((r) => passesFilter(categoryFilter, PRODUCTS.find((p) => p.sku === r.sku)?.category ?? ""))
       .sort((a, b) => a.last7DayOsa - b.last7DayOsa);
   }, [channelFilter, categoryFilter, skuFilter]);
 
@@ -65,29 +64,18 @@ export default function ScmPage() {
       <Card>
         <FilterRow>
           <FilterBox label="Date" icon={<Calendar size={12} />} value="09/07/26" onChange={() => {}} options={[{ value: "09/07/26", label: "09/07/2026" }]} />
-          <FilterBox
-            label="Channel"
-            value={channelFilter}
-            onChange={(v) => setChannelFilter(v as Channel | "All")}
-            options={[{ value: "All", label: "All" }, ...CHANNELS.map((c) => ({ value: c, label: c }))]}
-          />
-          <FilterBox
+          <MultiSelect label="Channel" icon={<Store size={12} />} selected={channelFilter} onChange={setChannelFilter} options={CHANNELS.map((c) => ({ value: c, label: c }))} />
+          <MultiSelect
             label="Category"
             icon={<Layers size={12} />}
-            value={categoryFilter}
-            onChange={(v) => {
-              setCategoryFilter(v as Category | "All");
-              setSkuFilter("All");
+            selected={categoryFilter}
+            onChange={(next) => {
+              setCategoryFilter(next);
+              setSkuFilter(new Set());
             }}
-            options={[{ value: "All", label: "All" }, ...categories.map((c) => ({ value: c, label: c }))]}
+            options={categories.map((c) => ({ value: c, label: c }))}
           />
-          <FilterBox
-            label="SKU Name"
-            icon={<Boxes size={12} />}
-            value={skuFilter}
-            onChange={setSkuFilter}
-            options={[{ value: "All", label: "All" }, ...skuOptions.map((p) => ({ value: p.sku, label: p.name }))]}
-          />
+          <MultiSelect label="SKU Name" icon={<Boxes size={12} />} selected={skuFilter} onChange={setSkuFilter} options={skuOptions.map((p) => ({ value: p.sku, label: p.name }))} />
         </FilterRow>
 
         <CardHeader title="SCM Qcomm SOH" subtitle="Total SOH, trailing consumption, DOH & pipeline. Click a channel to see its category split." />
@@ -215,12 +203,12 @@ function SohCells({ row, muted }: { row: SohSummaryRow; muted?: boolean }) {
   );
 }
 
-function CategoryRcaCard({ channelFilter, categoryFilter }: { channelFilter: Channel | "All"; categoryFilter: Category | "All" }) {
+function CategoryRcaCard({ channelFilter, categoryFilter }: { channelFilter: Set<string>; categoryFilter: Set<string> }) {
   const months = Array.from(new Set(CATEGORY_RCA.map((r) => r.month)));
   const [month, setMonth] = useState(months[months.length - 1]);
   const rows = CATEGORY_RCA.filter((r) => r.month === month)
-    .filter((r) => channelFilter === "All" || r.channel === channelFilter)
-    .filter((r) => categoryFilter === "All" || r.category === categoryFilter);
+    .filter((r) => passesFilter(channelFilter, r.channel))
+    .filter((r) => passesFilter(categoryFilter, r.category));
   const categories = Array.from(new Set(rows.map((r) => r.category)));
   const rcaChannels = Array.from(new Set(rows.map((r) => r.channel)));
 

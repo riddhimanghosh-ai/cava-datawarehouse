@@ -1,31 +1,48 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PackageCheck, TrendingDown } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, ProgressBar, Pills, SwatchDot, IconTile } from "@/components/ui";
+import { Boxes, Calendar, Layers, PackageCheck, Store, TrendingDown } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, ProgressBar, Pills, MultiSelect, passesFilter, FilterRow, FilterBox, SwatchDot, IconTile } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
-import { CHANNELS, Channel, INVENTORY, InventoryRow, inventorySummary, PRODUCTS } from "@/lib/data";
+import { CHANNELS, INVENTORY, InventoryRow, inventorySummary, PRODUCTS } from "@/lib/data";
 
 const STATUS_TABS: { value: "attention" | "All"; label: string }[] = [
   { value: "attention", label: "Needs attention" },
   { value: "All", label: "All listings" },
 ];
 
+const DATE_RANGES = [{ value: "today", label: "As of today" }, { value: "7", label: "As of last week" }];
+
 export default function InventoryPage() {
-  const [channelFilter, setChannelFilter] = useState<Channel | "All">("All");
+  const [range, setRange] = useState("today");
+  const [channelFilter, setChannelFilter] = useState<Set<string>>(new Set());
+  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
+  const [skuFilter, setSkuFilter] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"attention" | "All">("attention");
   const summary = inventorySummary();
 
+  const categories = Array.from(new Set(PRODUCTS.map((p) => p.category)));
+  const skuOptions = PRODUCTS.filter((p) => passesFilter(categoryFilter, p.category));
+
   const rows = useMemo(() => {
     return INVENTORY.filter((r) => {
-      if (channelFilter !== "All" && r.channel !== channelFilter) return false;
+      if (!passesFilter(channelFilter, r.channel)) return false;
+      if (!passesFilter(categoryFilter, r.category)) return false;
+      if (!passesFilter(skuFilter, r.sku)) return false;
       if (view === "attention") return r.status !== "healthy";
       return true;
     }).sort((a, b) => a.daysOfCover - b.daysOfCover);
-  }, [channelFilter, view]);
+  }, [channelFilter, categoryFilter, skuFilter, view]);
 
   return (
     <div className="space-y-6">
+      <FilterRow>
+        <FilterBox label="Date" icon={<Calendar size={12} />} value={range} onChange={setRange} options={DATE_RANGES} />
+        <MultiSelect label="Channel" icon={<Store size={12} />} selected={channelFilter} onChange={setChannelFilter} options={CHANNELS.map((c) => ({ value: c, label: c }))} />
+        <MultiSelect label="Category" icon={<Layers size={12} />} selected={categoryFilter} onChange={(n) => { setCategoryFilter(n); setSkuFilter(new Set()); }} options={categories.map((c) => ({ value: c, label: c }))} />
+        <MultiSelect label="SKU Name" icon={<Boxes size={12} />} selected={skuFilter} onChange={setSkuFilter} options={skuOptions.map((p) => ({ value: p.sku, label: p.name }))} />
+      </FilterRow>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Critical stockouts" value={`${summary.critical} listings`} tone="danger" />
         <StatCard label="Low stock" value={`${summary.low} listings`} />
@@ -37,13 +54,6 @@ export default function InventoryPage() {
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <CardHeader title="Inventory across channels" subtitle={`Showing ${rows.length} of ${INVENTORY.length} listings`} />
           <Pills options={STATUS_TABS} value={view} onChange={setView} />
-        </div>
-        <div className="mb-5">
-          <Pills
-            options={[{ value: "All" as const, label: "All channels" }, ...CHANNELS.map((c) => ({ value: c, label: c }))]}
-            value={channelFilter}
-            onChange={setChannelFilter}
-          />
         </div>
 
         {rows.length === 0 ? (

@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Crosshair, Target } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, Pills, IconTile, ProgressBar } from "@/components/ui";
+import { Crosshair, Layers, Store, Target } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, MultiSelect, passesFilter, FilterRow, IconTile, ProgressBar } from "@/components/ui";
 import { formatINR, cx } from "@/lib/format";
 import { allStockouts, COMPETITOR_STORES } from "@/lib/data";
 
 export default function StockoutSniperPage() {
-  const [store, setStore] = useState<string>("All");
-  const stockouts = allStockouts().filter((s) => store === "All" || s.store === store);
+  const [store, setStore] = useState<Set<string>>(new Set());
+  const [category, setCategory] = useState<Set<string>>(new Set());
+  const categories = Array.from(new Set(COMPETITOR_STORES.flatMap((s) => s.products.map((p) => p.category))));
+  const stockouts = allStockouts()
+    .filter((s) => passesFilter(store, s.store))
+    .filter((s) => passesFilter(category, s.product.category));
   const freshWindows = allStockouts().filter((s) => (s.product.outOfStockDays ?? 0) <= 5).length;
 
   return (
@@ -21,14 +25,11 @@ export default function StockoutSniperPage() {
       </div>
 
       <Card>
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <CardHeader title="Stockout Sniper" subtitle="When a competitor's product runs dry, their demand has nowhere to go but you — run a comparison ad against these while the window is open" />
-          <Pills
-            options={[{ value: "All", label: "All stores" }, ...COMPETITOR_STORES.map((s) => ({ value: s.name, label: s.name }))]}
-            value={store}
-            onChange={setStore}
-          />
-        </div>
+        <FilterRow>
+          <MultiSelect label="Store" icon={<Store size={12} />} selected={store} onChange={setStore} options={COMPETITOR_STORES.map((s) => ({ value: s.name, label: s.name }))} />
+          <MultiSelect label="Category" icon={<Layers size={12} />} selected={category} onChange={setCategory} options={categories.map((c) => ({ value: c, label: c }))} />
+        </FilterRow>
+        <CardHeader title="Stockout Sniper" subtitle="When a competitor's product runs dry, their demand has nowhere to go but you — run a comparison ad against these while the window is open" />
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {stockouts.map((s) => {
             const days = s.product.outOfStockDays ?? 0;

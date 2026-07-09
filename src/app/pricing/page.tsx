@@ -1,21 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { Store, Tag } from "lucide-react";
-import { Card, CardHeader, FilterBox, FilterRow, StatCard } from "@/components/ui";
+import { Boxes, Calendar, Store, Tag } from "lucide-react";
+import { Card, CardHeader, FilterBox, FilterRow, MultiSelect, passesFilter, StatCard } from "@/components/ui";
 import { formatINR, cx } from "@/lib/format";
 import { Channel, PRICING_PLATFORMS, PRICING_TRACKED_SKUS, pricingSeries } from "@/lib/data";
+
+const DATE_RANGES = [
+  { value: "14", label: "Last 14 days" },
+  { value: "7", label: "Last 7 days" },
+];
 
 export default function PricingPage() {
   const [metric, setMetric] = useState<"MRP" | "SP">("SP");
   const [platform, setPlatform] = useState<Channel>("Zepto");
+  const [range, setRange] = useState("14");
+  const [skuFilter, setSkuFilter] = useState<Set<string>>(new Set());
 
-  const rows = pricingSeries(metric, platform);
+  const rows = pricingSeries(metric, platform).slice(-Number(range));
   const first = rows[0].values;
   const last = rows[rows.length - 1].values;
 
-  const cavaSkus = PRICING_TRACKED_SKUS.filter((s) => !s.isCompetitor);
-  const competitorSkus = PRICING_TRACKED_SKUS.filter((s) => s.isCompetitor);
+  const cavaSkus = PRICING_TRACKED_SKUS.filter((s) => !s.isCompetitor && passesFilter(skuFilter, s.code));
+  const competitorSkus = PRICING_TRACKED_SKUS.filter((s) => s.isCompetitor && passesFilter(skuFilter, s.code));
 
   const biggestMoveSku = PRICING_TRACKED_SKUS.map((s) => ({ sku: s, changePct: ((last[s.code] - first[s.code]) / first[s.code]) * 100 })).sort(
     (a, b) => Math.abs(b.changePct) - Math.abs(a.changePct)
@@ -48,6 +55,14 @@ export default function PricingPage() {
             value={platform}
             onChange={(v) => setPlatform(v as Channel)}
             options={PRICING_PLATFORMS.map((p) => ({ value: p, label: p }))}
+          />
+          <FilterBox label="Date range" icon={<Calendar size={12} />} value={range} onChange={setRange} options={DATE_RANGES} />
+          <MultiSelect
+            label="SKU"
+            icon={<Boxes size={12} />}
+            selected={skuFilter}
+            onChange={setSkuFilter}
+            options={PRICING_TRACKED_SKUS.map((s) => ({ value: s.code, label: s.name }))}
           />
         </FilterRow>
 
@@ -98,9 +113,9 @@ export default function PricingPage() {
       </Card>
 
       <Card>
-        <CardHeader title="14-day price movement" subtitle="Change from first to last tracked day, this platform & metric" />
+        <CardHeader title="Price movement" subtitle="Change from first to last tracked day, this platform & metric" />
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {PRICING_TRACKED_SKUS.map((s) => {
+          {PRICING_TRACKED_SKUS.filter((s) => passesFilter(skuFilter, s.code)).map((s) => {
             const changePct = ((last[s.code] - first[s.code]) / first[s.code]) * 100;
             return (
               <div key={s.code} className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">

@@ -1,16 +1,32 @@
 "use client";
 
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertOctagon, Banknote, Clock, ShieldAlert } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, RingProgress, IconTile } from "@/components/ui";
-import { formatINR } from "@/lib/format";
-import { CASH_TREND, cashSummary, PAYABLES, PAYOUT_CYCLE_DAYS, CHANNEL_TAKE_RATE, RECEIVABLES } from "@/lib/data";
+import { useState } from "react";
+import { AlertOctagon, Banknote, Calendar, Clock, ShieldAlert, Store } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, RingProgress, IconTile, ProgressBar, FilterRow, FilterBox, MultiSelect, passesFilter } from "@/components/ui";
+import { formatINR, cx } from "@/lib/format";
+import { CASH_TREND, cashSummary, PAYABLES, PAYOUT_CYCLE_DAYS, CHANNEL_TAKE_RATE, RECEIVABLES, CHANNELS } from "@/lib/data";
+
+const MONTH_RANGES = [
+  { value: "6", label: "Last 6 months" },
+  { value: "3", label: "Last 3 months" },
+];
 
 export default function CashflowPage() {
   const summary = cashSummary();
+  const [range, setRange] = useState("6");
+  const [channels, setChannels] = useState<Set<string>>(new Set());
+
+  const trend = CASH_TREND.slice(-Number(range));
+  const receivables = RECEIVABLES.filter((r) => passesFilter(channels, r.channel));
+  const payoutChannels = CHANNELS.filter((c) => passesFilter(channels, c));
 
   return (
     <div className="space-y-6">
+      <FilterRow>
+        <FilterBox label="Date range" icon={<Calendar size={12} />} value={range} onChange={setRange} options={MONTH_RANGES} />
+        <MultiSelect label="Channel" icon={<Store size={12} />} options={CHANNELS.map((c) => ({ value: c, label: c }))} selected={channels} onChange={setChannels} />
+      </FilterRow>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Cash on hand" value={formatINR(summary.current, true)} />
         <StatCard label="Total receivables" value={formatINR(summary.totalReceivables, true)} />
@@ -19,62 +35,62 @@ export default function CashflowPage() {
       </div>
 
       <Card>
-        <CardHeader title="Cash balance trend" subtitle="Monthly closing cash position, inflow vs outflow" />
-        <ResponsiveContainer width="100%" height={280}>
-          <AreaChart data={CASH_TREND}>
-            <defs>
-              <linearGradient id="cash" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.45} />
-                <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid stroke="var(--border)" vertical={false} />
-            <XAxis dataKey="date" tick={{ fill: "var(--muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "var(--muted)", fontSize: 11 }} tickFormatter={(v) => formatINR(v, true)} axisLine={false} tickLine={false} width={70} />
-            <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12 }} formatter={(v) => formatINR(Number(v))} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Area type="monotone" dataKey="cashBalance" name="Closing cash balance" stroke="var(--accent)" strokeWidth={2.5} fill="url(#cash)" />
-          </AreaChart>
-        </ResponsiveContainer>
+        <CardHeader title="Cash balance, inflow & outflow" subtitle="Monthly — closing cash position with in/out breakdown" />
+        <div className="overflow-x-auto -mx-5">
+          <table className="w-full text-sm min-w-[560px]">
+            <thead>
+              <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
+                <th className="py-2 px-5 font-medium">Month</th>
+                <th className="py-2 px-2 font-medium">Inflow</th>
+                <th className="py-2 px-2 font-medium">Outflow</th>
+                <th className="py-2 px-2 font-medium">Net</th>
+                <th className="py-2 px-2 font-medium">Closing balance</th>
+                <th className="py-2 px-2 font-medium w-40">Balance trend</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trend.map((c) => {
+                const net = c.inflow - c.outflow;
+                const maxBal = Math.max(...trend.map((t) => t.cashBalance), 1);
+                return (
+                  <tr key={c.date} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
+                    <td className="py-2.5 px-5 font-medium">{c.date}</td>
+                    <td className="py-2.5 px-2 text-[var(--ok)]">{formatINR(c.inflow, true)}</td>
+                    <td className="py-2.5 px-2 text-[var(--danger)]">{formatINR(c.outflow, true)}</td>
+                    <td className={cx("py-2.5 px-2 font-medium", net >= 0 ? "text-[var(--ok)]" : "text-[var(--danger)]")}>{net >= 0 ? "+" : ""}{formatINR(net, true)}</td>
+                    <td className="py-2.5 px-2 font-semibold">{formatINR(c.cashBalance, true)}</td>
+                    <td className="py-2.5 px-2"><ProgressBar pct={(c.cashBalance / maxBal) * 100} /></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
-          <CardHeader title="Monthly inflow vs outflow" />
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={CASH_TREND}>
-              <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="date" tick={{ fill: "var(--muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "var(--muted)", fontSize: 11 }} tickFormatter={(v) => formatINR(v, true)} axisLine={false} tickLine={false} width={70} />
-              <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12 }} formatter={(v) => formatINR(Number(v))} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="inflow" name="Inflow" fill="var(--accent)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="outflow" name="Outflow" fill="#ff5d5d" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-
-        <Card>
           <CardHeader title="Channel payout cycles" subtitle="Days to receive settlement + marketplace commission" />
-          <div className="grid grid-cols-2 gap-3">
-            {Object.entries(PAYOUT_CYCLE_DAYS).map(([channel, days]) => (
-              <div key={channel} className="flex items-center gap-3 rounded-lg bg-[var(--surface-2)] px-3 py-3">
-                <RingProgress pct={(days / 30) * 100} size={46} stroke={5} tone={days > 21 ? "danger" : "accent"} label={`${days}d`} />
-                <div>
-                  <div className="text-sm font-medium leading-tight">{channel}</div>
-                  <div className="text-[11px] text-[var(--muted)]">{(CHANNEL_TAKE_RATE[channel as keyof typeof CHANNEL_TAKE_RATE] * 100).toFixed(1)}% take rate</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {payoutChannels.map((channel) => {
+              const days = PAYOUT_CYCLE_DAYS[channel];
+              return (
+                <div key={channel} className="flex items-center gap-3 rounded-lg bg-[var(--surface-2)] px-3 py-3">
+                  <RingProgress pct={(days / 30) * 100} size={46} stroke={5} tone={days > 21 ? "danger" : "accent"} label={`${days}d`} />
+                  <div>
+                    <div className="text-sm font-medium leading-tight">{channel}</div>
+                    <div className="text-[11px] text-[var(--muted)]">{(CHANNEL_TAKE_RATE[channel] * 100).toFixed(1)}% take rate</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader title="Receivables by channel" subtitle="Outstanding settlement amounts" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {RECEIVABLES.map((r) => (
+            {receivables.map((r) => (
               <div key={r.channel} className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
                 <div className="flex items-start justify-between mb-2">
                   <IconTile icon={<Clock size={16} />} tone={r.status === "on-time" ? "ok" : r.status === "delayed" ? "default" : "danger"} />
@@ -85,28 +101,29 @@ export default function CashflowPage() {
                 <div className="text-[11px] text-[var(--muted)] mt-1">Oldest invoice {r.oldestInvoiceDays}d · {r.avgCycleDays}d cycle</div>
               </div>
             ))}
-          </div>
-        </Card>
-
-        <Card>
-          <CardHeader title="Upcoming payables" subtitle="Prioritized by urgency" />
-          <div className="space-y-2.5">
-            {[...PAYABLES].sort((a, b) => a.dueInDays - b.dueInDays).map((p) => (
-              <div key={p.vendor} className="flex items-center gap-3 rounded-lg bg-[var(--surface-2)] px-3 py-2.5">
-                <IconTile icon={p.priority === "high" ? <AlertOctagon size={16} /> : <Banknote size={16} />} tone={p.priority === "high" ? "danger" : "default"} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{p.vendor}</div>
-                  <div className="text-[11px] text-[var(--muted)]">{p.category} · due in {p.dueInDays}d</div>
-                </div>
-                <div className="text-right shrink-0">
-                  <div className="text-sm font-semibold">{formatINR(p.amount, true)}</div>
-                  <Badge tone={p.priority}>{p.priority}</Badge>
-                </div>
-              </div>
-            ))}
+            {receivables.length === 0 && <p className="text-sm text-[var(--muted)] py-4 col-span-full text-center">No receivables for this channel filter.</p>}
           </div>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader title="Upcoming payables" subtitle="Prioritized by urgency" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {[...PAYABLES].sort((a, b) => a.dueInDays - b.dueInDays).map((p) => (
+            <div key={p.vendor} className="flex items-center gap-3 rounded-lg bg-[var(--surface-2)] px-3 py-2.5">
+              <IconTile icon={p.priority === "high" ? <AlertOctagon size={16} /> : <Banknote size={16} />} tone={p.priority === "high" ? "danger" : "default"} />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium truncate">{p.vendor}</div>
+                <div className="text-[11px] text-[var(--muted)]">{p.category} · due in {p.dueInDays}d</div>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="text-sm font-semibold">{formatINR(p.amount, true)}</div>
+                <Badge tone={p.priority}>{p.priority}</Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
 
       {summary.runwayMonths < 8 && (
         <Card className="border-[var(--warning)]/40 bg-[var(--warning)]/5">

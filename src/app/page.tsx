@@ -1,25 +1,15 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import { AlertTriangle, ArrowDownRight, Boxes, Calendar, Flame, PackageX, Store, TrendingUp, Wallet } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, IconTile, RingProgress, ProgressBar, FilterRow, FilterBox, MultiSelect } from "@/components/ui";
+import { formatINR, formatPct, formatNumber } from "@/lib/format";
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { AlertTriangle, ArrowDownRight, Boxes, Flame, PackageX, TrendingUp, Wallet } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, IconTile, RingProgress } from "@/components/ui";
-import { formatINR, formatPct } from "@/lib/format";
-import {
+  CHANNELS,
   CHANNEL_COLORS,
-  dailyTotals,
+  dailyTotalsFiltered,
   inventorySummary,
-  last30vsPrev30,
+  last30vsPrev30Filtered,
   totalRevenueByChannel,
   cashSummary,
   forecastAccuracy,
@@ -28,10 +18,28 @@ import {
   COMPETITORS,
 } from "@/lib/data";
 
+const DATE_RANGES = [
+  { value: "30", label: "Last 30 days" },
+  { value: "14", label: "Last 14 days" },
+  { value: "7", label: "Last 7 days" },
+];
+
 export default function OverviewPage() {
-  const revenueGrowth = last30vsPrev30();
-  const daily = dailyTotals(30);
-  const byChannel = totalRevenueByChannel(30);
+  const [range, setRange] = useState("30");
+  const [channels, setChannels] = useState<Set<string>>(new Set());
+
+  const days = Number(range);
+  const revenueGrowth = last30vsPrev30Filtered(channels);
+  const daily = dailyTotalsFiltered(channels, days);
+  const byChannel = useMemo(() => {
+    const all = totalRevenueByChannel(days);
+    const filtered = channels.size === 0 ? all : all.filter((c) => channels.has(c.channel));
+    const total = filtered.reduce((s, c) => s + c.revenue, 0);
+    return filtered
+      .map((c) => ({ ...c, share: total > 0 ? (c.revenue / total) * 100 : 0 }))
+      .sort((a, b) => b.revenue - a.revenue);
+  }, [days, channels]);
+
   const inv = inventorySummary();
   const cash = cashSummary();
   const accuracy = forecastAccuracy();
@@ -40,87 +48,65 @@ export default function OverviewPage() {
   const viralReels = REELS.filter((r) => r.status === "viral").length;
   const topGrowthCompetitor = [...COMPETITORS].sort((a, b) => b.igGrowthPct30d - a.igGrowthPct30d)[0];
 
+  const recentDays = daily.slice(-7);
+  const maxDayRev = Math.max(...recentDays.map((d) => d.revenue), 1);
+
   return (
     <div className="space-y-6">
+      <FilterRow>
+        <FilterBox label="Date range" icon={<Calendar size={12} />} value={range} onChange={setRange} options={DATE_RANGES} />
+        <MultiSelect label="Channel" icon={<Store size={12} />} options={CHANNELS.map((c) => ({ value: c, label: c }))} selected={channels} onChange={setChannels} />
+      </FilterRow>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          label="Revenue (last 30 days, all channels)"
-          value={formatINR(revenueGrowth.last, true)}
-          changePct={revenueGrowth.growthPct}
-          changeLabel="vs prior 30 days"
-        />
-        <StatCard
-          label="Cash on hand"
-          value={formatINR(cash.current, true)}
-          changePct={((cash.current - 6_400_000) / 6_400_000) * 100}
-          changeLabel="since Feb"
-        />
-        <StatCard
-          label="SKUs at stockout risk"
-          value={`${inv.critical + inv.low}`}
-          changePct={-((inv.critical + inv.low) / inv.total) * 100}
-          changeLabel="of channel-SKU pairs"
-          tone="danger"
-        />
-        <StatCard
-          label="Demand forecast accuracy"
-          value={`${accuracy}%`}
-          changePct={accuracy - 85}
-          changeLabel="vs 85% target"
-          tone={accuracy >= 85 ? "ok" : "danger"}
-        />
+        <StatCard label={`Revenue (last 30 days${channels.size ? ", filtered" : ", all channels"})`} value={formatINR(revenueGrowth.last, true)} changePct={revenueGrowth.growthPct} changeLabel="vs prior 30 days" />
+        <StatCard label="Cash on hand" value={formatINR(cash.current, true)} changePct={((cash.current - 6_400_000) / 6_400_000) * 100} changeLabel="since Feb" />
+        <StatCard label="SKUs at stockout risk" value={`${inv.critical + inv.low}`} changePct={-((inv.critical + inv.low) / inv.total) * 100} changeLabel="of channel-SKU pairs" tone="danger" />
+        <StatCard label="Demand forecast accuracy" value={`${accuracy}%`} changePct={accuracy - 85} changeLabel="vs 85% target" tone={accuracy >= 85 ? "ok" : "danger"} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
-          <CardHeader title="Revenue trend — last 30 days" subtitle="All channels combined, daily gross revenue" />
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={daily}>
-              <defs>
-                <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.5} />
-                  <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="date" tick={{ fill: "var(--muted)", fontSize: 11 }} tickFormatter={(d: string) => d.slice(5)} interval={4} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "var(--muted)", fontSize: 11 }} tickFormatter={(v) => formatINR(v, true)} axisLine={false} tickLine={false} width={70} />
-              <Tooltip
-                contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12 }}
-                formatter={(v) => formatINR(Number(v))}
-              />
-              <Area type="monotone" dataKey="revenue" stroke="var(--accent)" strokeWidth={2} fill="url(#rev)" />
-            </AreaChart>
-          </ResponsiveContainer>
+          <CardHeader title={`Revenue — last ${days} days`} subtitle="Daily gross revenue for the selected channels" />
+          <div className="overflow-x-auto -mx-5">
+            <table className="w-full text-sm min-w-[520px]">
+              <thead>
+                <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
+                  <th className="py-2 px-5 font-medium">Date (last 7 shown)</th>
+                  <th className="py-2 px-2 font-medium">Revenue</th>
+                  <th className="py-2 px-2 font-medium">Orders</th>
+                  <th className="py-2 px-2 font-medium w-40">Share of peak day</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentDays.map((d) => (
+                  <tr key={d.date} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
+                    <td className="py-2.5 px-5 font-medium">{new Date(d.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</td>
+                    <td className="py-2.5 px-2">{formatINR(d.revenue, true)}</td>
+                    <td className="py-2.5 px-2 text-[var(--muted)]">{formatNumber(d.orders)}</td>
+                    <td className="py-2.5 px-2"><ProgressBar pct={(d.revenue / maxDayRev) * 100} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
 
         <Card>
-          <CardHeader title="Revenue mix by channel" subtitle="Last 30 days" />
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie
-                data={byChannel}
-                dataKey="revenue"
-                nameKey="channel"
-                innerRadius={55}
-                outerRadius={85}
-                paddingAngle={2}
-              >
-                {byChannel.map((c) => (
-                  <Cell key={c.channel} fill={CHANNEL_COLORS[c.channel]} stroke="var(--surface)" />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12 }}
-                formatter={(v) => formatINR(Number(v))}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="grid grid-cols-2 gap-2 mt-2">
+          <CardHeader title="Revenue mix by channel" subtitle={`Last ${days} days`} />
+          <div className="space-y-3">
             {byChannel.map((c) => (
-              <div key={c.channel} className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
-                <span className="h-2 w-2 rounded-full" style={{ background: CHANNEL_COLORS[c.channel] }} />
-                {c.channel}
+              <div key={c.channel}>
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: CHANNEL_COLORS[c.channel] }} />
+                    {c.channel}
+                  </span>
+                  <span className="text-[var(--muted)]">{formatINR(c.revenue, true)} · {c.share.toFixed(1)}%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-[var(--surface-2)] overflow-hidden">
+                  <div className="h-full rounded-full" style={{ width: `${c.share}%`, background: CHANNEL_COLORS[c.channel] }} />
+                </div>
               </div>
             ))}
           </div>
@@ -131,12 +117,7 @@ export default function OverviewPage() {
         <Card>
           <CardHeader title="Inventory health" subtitle="Across all channel-SKU listings" />
           <div className="flex items-center gap-4 mb-4">
-            <RingProgress
-              pct={(inv.healthy / inv.total) * 100}
-              size={64}
-              tone="ok"
-              label={`${Math.round((inv.healthy / inv.total) * 100)}%`}
-            />
+            <RingProgress pct={(inv.healthy / inv.total) * 100} size={64} tone="ok" label={`${Math.round((inv.healthy / inv.total) * 100)}%`} />
             <div className="text-xs text-[var(--muted)]">
               <span className="text-[var(--foreground)] font-semibold">{inv.healthy}</span> of {inv.total} listings are at a healthy stock level. The rest need action below.
             </div>

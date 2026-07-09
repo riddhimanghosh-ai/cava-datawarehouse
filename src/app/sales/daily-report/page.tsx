@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRightLeft, Package, ShoppingBag, Store } from "lucide-react";
-import { Card, CardHeader, StatCard, IconTile, Pills, ProgressBar } from "@/components/ui";
+import { ArrowRightLeft, Calendar, Layers, Network, Package, ShoppingBag, Store } from "lucide-react";
+import { Card, CardHeader, StatCard, IconTile, Pills, ProgressBar, MultiSelect, passesFilter, FilterRow, FilterBox } from "@/components/ui";
 import { formatINR, formatPct, cx } from "@/lib/format";
 import {
   DSR_CHANNEL_GROUPS,
@@ -19,15 +19,30 @@ const GROUP_ICON: Record<ChannelGroup, React.ReactNode> = {
   D2C: <Store size={16} />,
 };
 
+const MONTH_OPTS = [
+  { value: "jul", label: "Jul'26 (MTD)" },
+  { value: "jun", label: "Jun'26" },
+];
+
 function lakh(v: number) {
   return formatINR(v * 100000, true);
 }
 
 export default function DailySalesReportPage() {
-  const totals = dsrTotals();
+  const allTotals = dsrTotals();
+  const [month, setMonth] = useState("jul");
+  const [groups, setGroups] = useState<Set<string>>(new Set());
+
+  const dsrGroups = DSR_CHANNEL_GROUPS.filter((g) => passesFilter(groups, g.group));
+  const totals = allTotals;
 
   return (
     <div className="space-y-6">
+      <FilterRow>
+        <FilterBox label="Month" icon={<Calendar size={12} />} value={month} onChange={setMonth} options={MONTH_OPTS} />
+        <MultiSelect label="Channel group" icon={<Network size={12} />} selected={groups} onChange={setGroups} options={DSR_CHANNEL_GROUPS.map((g) => ({ value: g.group, label: g.group }))} />
+      </FilterRow>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="MTD (Month to Date) Net — all channels" value={lakh(totals.mtdNet)} />
         <StatCard label="MTD (Month to Date) net achieved" value={`${totals.pctAchieved}%`} tone={totals.pctAchieved >= 90 ? "ok" : "danger"} />
@@ -55,7 +70,7 @@ export default function DailySalesReportPage() {
               </tr>
             </thead>
             <tbody>
-              {DSR_CHANNEL_GROUPS.map((g) => (
+              {dsrGroups.map((g) => (
                 <tr key={g.group} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
                   <td className="py-2.5 px-5 font-medium flex items-center gap-2">
                     <IconTile icon={GROUP_ICON[g.group]} tone="default" />

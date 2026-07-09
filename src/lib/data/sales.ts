@@ -91,6 +91,31 @@ export function dailyTotals(days = DAYS) {
   return Array.from(byDate.values()).slice(-days);
 }
 
+// Channel-filtered daily totals. Empty set = all channels.
+export function dailyTotalsFiltered(channels: Set<string>, days = DAYS) {
+  const useAll = channels.size === 0;
+  const byDate = new Map<string, { date: string; revenue: number; orders: number }>();
+  for (const row of DAILY_SALES) {
+    if (!useAll && !channels.has(row.channel)) continue;
+    const cur = byDate.get(row.date) ?? { date: row.date, revenue: 0, orders: 0 };
+    cur.revenue += row.revenue;
+    cur.orders += row.orders;
+    byDate.set(row.date, cur);
+  }
+  return Array.from(byDate.values()).slice(-days);
+}
+
+export function last30vsPrev30Filtered(channels: Set<string>) {
+  const useAll = channels.size === 0;
+  const rows = DAILY_SALES.filter((r) => useAll || channels.has(r.channel));
+  // rows are grouped per date across channels; recompute by date order
+  const daily = dailyTotalsFiltered(channels, DAYS);
+  const last = daily.slice(-30).reduce((s, r) => s + r.revenue, 0);
+  const prev = daily.slice(-60, -30).reduce((s, r) => s + r.revenue, 0);
+  void rows;
+  return { last, prev, growthPct: prev > 0 ? ((last - prev) / prev) * 100 : 0 };
+}
+
 export function last30vsPrev30() {
   const days30 = 30;
   const chLen = CHANNELS.length;

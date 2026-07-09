@@ -1,9 +1,8 @@
 "use client";
 
-import { Line, LineChart, ResponsiveContainer } from "recharts";
 import { Flame, Play, Search, Swords, Tag } from "lucide-react";
 import { Card, CardHeader, StatCard, Badge, ProgressBar, IconTile } from "@/components/ui";
-import { formatCompactNumber, formatINR, formatPct } from "@/lib/format";
+import { formatCompactNumber, formatINR, formatPct, cx } from "@/lib/format";
 import { AD_CAMPAIGNS, COMPETITORS, DEALS, REELS, TRENDING_KEYWORDS } from "@/lib/data";
 
 export default function MarketingPage() {
@@ -33,12 +32,19 @@ export default function MarketingPage() {
               </div>
               <div className="text-sm font-medium leading-snug mb-1">{k.keyword}</div>
               <div className="text-[11px] text-[var(--muted)] mb-2">{k.platform}</div>
-              <ResponsiveContainer width="100%" height={32}>
-                <LineChart data={k.volumeTrend.map((v, i) => ({ i, v }))}>
-                  <Line type="monotone" dataKey="v" stroke={k.changePct >= 0 ? "var(--accent)" : "var(--danger)"} strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-              <div className="text-[11px] text-[var(--muted)] mt-1">
+              <div className="flex items-end gap-0.5 h-8">
+                {k.volumeTrend.map((v, i) => {
+                  const max = Math.max(...k.volumeTrend);
+                  return (
+                    <span
+                      key={i}
+                      className={cx("flex-1 rounded-sm", k.changePct >= 0 ? "bg-[var(--accent)]" : "bg-[var(--danger)]")}
+                      style={{ height: `${Math.max(12, (v / max) * 100)}%`, opacity: 0.35 + (i / k.volumeTrend.length) * 0.65 }}
+                    />
+                  );
+                })}
+              </div>
+              <div className="text-[11px] text-[var(--muted)] mt-1.5">
                 {k.cavaRanking ? <>CAVA ranks <span className="text-[var(--foreground)] font-medium">#{k.cavaRanking}</span></> : "CAVA not ranking yet"}
               </div>
             </div>

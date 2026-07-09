@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Boxes,
+  BarChart3,
   TrendingUp,
   Wallet,
   Megaphone,
@@ -14,6 +15,7 @@ import { cx } from "@/lib/format";
 const NAV = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/inventory", label: "Inventory", icon: Boxes },
+  { href: "/sales", label: "Sales", icon: BarChart3 },
   { href: "/forecasting", label: "Demand Forecasting", icon: TrendingUp },
   { href: "/cashflow", label: "Cash Flow", icon: Wallet },
   { href: "/marketing", label: "Marketing Pulse", icon: Megaphone },

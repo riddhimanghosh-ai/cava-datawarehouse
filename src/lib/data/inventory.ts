@@ -19,6 +19,8 @@ export interface InventoryRow {
   status: StockStatus;
   sellThroughPct: number;
   warehouse: string;
+  openOrders: number;
+  leadTimeDays: number;
 }
 
 const WAREHOUSE_BY_CHANNEL: Record<Channel, string> = {
@@ -69,6 +71,7 @@ for (const product of PRODUCTS) {
     const sellThroughPct = Math.round(
       (isOverbought ? rng.range(18, 34) : isHeroRunner ? rng.range(78, 96) : rng.range(45, 72)) * 10
     ) / 10;
+    const openOrders = status === "critical" || status === "low" ? Math.round(avgDailySales * rng.range(10, 25)) : Math.round(avgDailySales * rng.range(0, 8));
 
     INVENTORY.push({
       sku: product.sku,
@@ -84,6 +87,8 @@ for (const product of PRODUCTS) {
       status,
       sellThroughPct,
       warehouse: WAREHOUSE_BY_CHANNEL[channel],
+      openOrders,
+      leadTimeDays: etaDays,
     });
   }
 }
@@ -103,4 +108,50 @@ export function inventorySummary() {
     return s + r.avgDailySales * 14 * product.price * 0.4;
   }, 0);
   return { critical, low, overstock, excess, healthy, capitalStuck, potentialLostSales, total: INVENTORY.length };
+}
+
+export interface SohSummaryRow {
+  key: string;
+  label: string;
+  totalSoh: number;
+  totalConsumption: number;
+  doh: number;
+  dohLastDay: number;
+  avgLeadTimeDays: number;
+  totalOpenOrders: number;
+  totalInTransit: number;
+  avgMrp: number;
+}
+
+// Mirrors the "SCM Qcomm SOH" report: channel rollups that expand into their
+// category breakdown, each with SOH, trailing consumption, days-of-hand
+// (DOH), and pipeline (open orders / in transit).
+export function sohByChannel(): SohSummaryRow[] {
+  return CHANNELS.map((channel) => rollupSoh(channel, INVENTORY.filter((r) => r.channel === channel), channel));
+}
+
+export function sohByCategoryForChannel(channel: Channel): SohSummaryRow[] {
+  const rows = INVENTORY.filter((r) => r.channel === channel);
+  const categories = Array.from(new Set(rows.map((r) => r.category)));
+  return categories.map((cat) => rollupSoh(`${channel}__${cat}`, rows.filter((r) => r.category === cat), cat));
+}
+
+export function sohTotal(): SohSummaryRow {
+  return rollupSoh("total", INVENTORY, "Total");
+}
+
+function rollupSoh(key: string, rows: InventoryRow[], label: string): SohSummaryRow {
+  const totalSoh = rows.reduce((s, r) => s + r.onHand, 0);
+  const totalConsumption = Math.round(rows.reduce((s, r) => s + r.avgDailySales * 30, 0));
+  const doh = totalConsumption > 0 ? Math.round((totalSoh / (totalConsumption / 30)) * 10) / 10 : 0;
+  const dohLastDay = Math.round(doh * (0.96 + ((totalSoh * 7) % 9) / 100) * 10) / 10;
+  const avgLeadTimeDays = rows.length ? Math.round(rows.reduce((s, r) => s + r.leadTimeDays, 0) / rows.length) : 0;
+  const totalOpenOrders = rows.reduce((s, r) => s + r.openOrders, 0);
+  const totalInTransit = rows.reduce((s, r) => s + r.incoming, 0);
+  const mrpWeighted = rows.reduce((s, r) => {
+    const product = PRODUCTS.find((p) => p.sku === r.sku)!;
+    return s + product.price * r.onHand;
+  }, 0);
+  const avgMrp = totalSoh > 0 ? Math.round(mrpWeighted / totalSoh) : 0;
+  return { key, label, totalSoh, totalConsumption, doh, dohLastDay, avgLeadTimeDays, totalOpenOrders, totalInTransit, avgMrp };
 }

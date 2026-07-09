@@ -4,3 +4,6 @@ export * from "./inventory";
 export * from "./forecast";
 export * from "./cashflow";
 export * from "./marketing";
+export * from "./osa";
+export * from "./categoryRca";
+export * from "./salesPlan";

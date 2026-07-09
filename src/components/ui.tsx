@@ -79,6 +79,12 @@ const BADGE_TONES: Record<string, string> = {
   "at-risk": "bg-red-500/15 text-red-400 border-red-500/30",
   high: "bg-red-500/15 text-red-400 border-red-500/30",
   medium: "bg-orange-500/15 text-orange-400 border-orange-500/30",
+  "p0 - critical": "bg-red-500/15 text-red-400 border-red-500/30",
+  "p1 - high": "bg-orange-500/15 text-orange-400 border-orange-500/30",
+  "p2 - medium": "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  crashing: "bg-red-500/15 text-red-400 border-red-500/30",
+  deteriorating: "bg-orange-500/15 text-orange-400 border-orange-500/30",
+  improving: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
 };
 
 export function Badge({ tone, children }: { tone: string; children: string }) {
@@ -86,16 +92,16 @@ export function Badge({ tone, children }: { tone: string; children: string }) {
     <span
       className={cx(
         "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium capitalize whitespace-nowrap",
-        BADGE_TONES[tone] ?? "bg-[var(--surface-2)] text-[var(--muted)] border-[var(--border)]"
+        BADGE_TONES[tone.toLowerCase()] ?? "bg-[var(--surface-2)] text-[var(--muted)] border-[var(--border)]"
       )}
     >
-      {children.replace(/-/g, " ")}
+      {children.includes(" ") ? children : children.replace(/-/g, " ")}
     </span>
   );
 }
 
-export function ProgressBar({ pct, tone = "accent" }: { pct: number; tone?: "accent" | "danger" | "ok" }) {
-  const color = tone === "danger" ? "bg-[var(--danger)]" : tone === "ok" ? "bg-[var(--ok)]" : "bg-[var(--accent)]";
+export function ProgressBar({ pct, tone = "accent" }: { pct: number; tone?: "accent" | "danger" | "ok" | "warning" }) {
+  const color = tone === "danger" ? "bg-[var(--danger)]" : tone === "ok" ? "bg-[var(--ok)]" : tone === "warning" ? "bg-[var(--warning)]" : "bg-[var(--accent)]";
   return (
     <div className="w-full h-1.5 rounded-full bg-[var(--surface-2)] overflow-hidden">
       <div className={cx("h-full rounded-full", color)} style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />

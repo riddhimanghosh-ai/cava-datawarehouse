@@ -38,6 +38,8 @@ export const GROUPS = [
     title: "Marketing",
     icon: Megaphone,
     items: [
+      { href: "/marketing/shopify-analytics", label: "Shopify Analytics" },
+      { href: "/marketing/google-analytics", label: "Google Analytics" },
       { href: "/marketing/events", label: "Events & Campaigns" },
       { href: "/marketing/social-comments", label: "Social Comments" },
       { href: "/marketing/price-tracker", label: "Competitor Price Tracker" },

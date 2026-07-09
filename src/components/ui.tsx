@@ -105,6 +105,13 @@ const BADGE_TONES: Record<string, string> = {
   "price-drop": "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
   "price-hike": "bg-orange-500/15 text-orange-400 border-orange-500/30",
   stockout: "bg-red-500/15 text-red-400 border-red-500/30",
+  fulfilled: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  processing: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+  refunded: "bg-orange-500/15 text-orange-400 border-orange-500/30",
+  cancelled: "bg-red-500/15 text-red-400 border-red-500/30",
+  vip: "bg-[var(--accent)]/20 text-[var(--accent)] border-[var(--accent)]/40",
+  repeat: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+  new: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
 };
 
 export function Badge({ tone, children }: { tone: string; children: string }) {
@@ -338,6 +345,60 @@ export function Pills<T extends string>({
           {o.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+// Underlined tab bar for in-page sections (Shopify / GA style).
+export function Tabs<T extends string>({
+  tabs,
+  value,
+  onChange,
+}: {
+  tabs: { value: T; label: string; icon?: ReactNode }[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1 border-b border-[var(--border)] mb-6">
+      {tabs.map((t) => (
+        <button
+          key={t.value}
+          onClick={() => onChange(t.value)}
+          className={cx(
+            "flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
+            value === t.value
+              ? "border-[var(--accent)] text-[var(--foreground)]"
+              : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
+          )}
+        >
+          {t.icon}
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// Horizontal labelled bar (device / browser / funnel style).
+export function LabelledBar({
+  label,
+  value,
+  pct,
+  tone = "accent",
+}: {
+  label: string;
+  value: string;
+  pct: number;
+  tone?: "accent" | "danger" | "ok" | "warning";
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between text-sm mb-1">
+        <span className="font-medium">{label}</span>
+        <span className="text-[var(--muted)]">{value}</span>
+      </div>
+      <ProgressBar pct={pct} tone={tone} />
     </div>
   );
 }

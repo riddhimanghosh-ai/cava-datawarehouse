@@ -138,7 +138,7 @@ function OfftakeCard({ channels, categoryFilter }: { channels: Set<string>; cate
   return (
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <CardHeader title="Offtake report" subtitle={`${rows[0]?.tillLabel} · consumer offtake by channel & category, INR`} />
+        <CardHeader title="Offtake report" subtitle="Consumer offtake by channel & category (INR) — month-to-date vs. same point last month" />
         <Pills
           options={[
             { value: "current", label: OFFTAKE_CURRENT[0].tillLabel },

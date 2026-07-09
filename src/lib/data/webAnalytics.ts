@@ -27,6 +27,42 @@ export const SHOPIFY_OVERVIEW_KPIS: ShopifyKpi[] = [
   { label: "Purchase Frequency", value: "1.17", caption: "orders / customer" },
 ];
 
+export interface BarDatum {
+  label: string;
+  value: number;
+  caption?: string;
+}
+
+// Orders by day of week (Mon–Sun).
+export const SHOPIFY_ORDERS_BY_DOW: BarDatum[] = [
+  { label: "Mon", value: 286 },
+  { label: "Tue", value: 312 },
+  { label: "Wed", value: 341 },
+  { label: "Thu", value: 402 },
+  { label: "Fri", value: 388 },
+  { label: "Sat", value: 331 },
+  { label: "Sun", value: 258 },
+];
+
+// Peak shopping hours (orders by hour bucket), peak at 4PM & 9PM.
+export const SHOPIFY_PEAK_HOURS: BarDatum[] = [
+  { label: "6–9AM", value: 84 },
+  { label: "9–12PM", value: 176 },
+  { label: "12–3PM", value: 241 },
+  { label: "3–6PM", value: 402, caption: "peak" },
+  { label: "6–9PM", value: 388 },
+  { label: "9–12AM", value: 312 },
+];
+
+// Sales by traffic/sales channel into the D2C storefront.
+export const SHOPIFY_SALES_CHANNELS: BarDatum[] = [
+  { label: "Online Store", value: 2680000, caption: "63%" },
+  { label: "Instagram Shop", value: 742000, caption: "17%" },
+  { label: "Google / Search", value: 486000, caption: "11%" },
+  { label: "Facebook Shop", value: 214000, caption: "5%" },
+  { label: "Shop app", value: 138000, caption: "3%" },
+];
+
 export interface SalesByCategory {
   category: string;
   revenue: number;

@@ -44,6 +44,7 @@ export const GROUPS = [
     items: [
       { href: "/marketing/shopify-analytics", label: "Shopify Analytics" },
       { href: "/marketing/google-analytics", label: "Google Analytics" },
+      { href: "/marketing/meta-ads", label: "Meta & Google Ads" },
       { href: "/marketing/events", label: "Events & Campaigns" },
       { href: "/marketing/social-comments", label: "Social Comments" },
       { href: "/marketing/price-tracker", label: "Competitor Price Tracker" },

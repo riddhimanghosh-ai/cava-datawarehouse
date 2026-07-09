@@ -11,6 +11,8 @@ import {
   SHOPIFY_TOP_PRODUCTS,
   SHOPIFY_RECENT_ORDERS,
   SHOPIFY_FUNNEL,
+  SHOPIFY_DISCOUNT_SUMMARY,
+  SHOPIFY_DISCOUNT_CODES,
 } from "@/lib/data";
 
 type Tab = "overview" | "sales" | "customers" | "products" | "orders" | "funnels";
@@ -41,25 +43,62 @@ export default function ShopifyAnalyticsPage() {
       )}
 
       {tab === "sales" && (
-        <Card>
-          <CardHeader title="Sales by category" subtitle="Revenue, orders, units & discount depth — Shopify D2C, last 30 days" />
-          <div className="space-y-3">
-            {SHOPIFY_SALES_BY_CATEGORY.map((c) => (
-              <div key={c.category} className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">{c.category}</span>
-                  <span className="text-sm font-semibold">{formatINR(c.revenue, true)}</span>
-                </div>
-                <ProgressBar pct={(c.revenue / maxCatRev) * 100} />
-                <div className="flex items-center gap-4 text-[11px] text-[var(--muted)] mt-2">
-                  <span>{formatNumber(c.orders)} orders</span>
-                  <span>{formatNumber(c.units)} units</span>
-                  <span>{c.discountPct}% avg discount</span>
-                </div>
-              </div>
-            ))}
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-sm font-semibold mb-3">🏷️ Discount Analysis</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <StatCard label="Discount Rate" value={`${SHOPIFY_DISCOUNT_SUMMARY.discountRatePct}%`} caption="of orders used a code" tone="danger" />
+              <StatCard label="Total Discounts Given" value={formatINR(SHOPIFY_DISCOUNT_SUMMARY.totalDiscountsGiven, true)} caption="last 30 days" />
+              <StatCard label="Avg Discount / Order" value={formatINR(SHOPIFY_DISCOUNT_SUMMARY.avgDiscountPerOrder)} caption="across discounted orders" />
+            </div>
           </div>
-        </Card>
+
+          <Card>
+            <CardHeader title="Top discount codes" subtitle="Which codes are eating margin — by uses & total discount" />
+            <div className="overflow-x-auto -mx-5">
+              <table className="w-full text-sm min-w-[560px]">
+                <thead>
+                  <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
+                    <th className="py-2 px-5 font-medium">Code</th>
+                    <th className="py-2 px-2 font-medium">Uses</th>
+                    <th className="py-2 px-2 font-medium">Total discount</th>
+                    <th className="py-2 px-2 font-medium">Avg discount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...SHOPIFY_DISCOUNT_CODES].sort((a, b) => b.totalDiscount - a.totalDiscount).map((d) => (
+                    <tr key={d.code} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
+                      <td className="py-2.5 px-5 font-mono text-[13px] font-medium">{d.code}</td>
+                      <td className="py-2.5 px-2">{formatNumber(d.uses)}</td>
+                      <td className="py-2.5 px-2 font-medium">{formatINR(d.totalDiscount, true)}</td>
+                      <td className="py-2.5 px-2 text-[var(--muted)]">{formatINR(d.avgDiscount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader title="Sales by category" subtitle="Revenue, orders, units & discount depth — Shopify D2C, last 30 days" />
+            <div className="space-y-3">
+              {SHOPIFY_SALES_BY_CATEGORY.map((c) => (
+                <div key={c.category} className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">{c.category}</span>
+                    <span className="text-sm font-semibold">{formatINR(c.revenue, true)}</span>
+                  </div>
+                  <ProgressBar pct={(c.revenue / maxCatRev) * 100} />
+                  <div className="flex items-center gap-4 text-[11px] text-[var(--muted)] mt-2">
+                    <span>{formatNumber(c.orders)} orders</span>
+                    <span>{formatNumber(c.units)} units</span>
+                    <span>{c.discountPct}% avg discount</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
       )}
 
       {tab === "customers" && (

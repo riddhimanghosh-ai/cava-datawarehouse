@@ -53,6 +53,32 @@ export interface TopCustomer {
   segment: "VIP" | "Repeat" | "New";
 }
 
+export interface DiscountCode {
+  code: string;
+  uses: number;
+  totalDiscount: number;
+  avgDiscount: number;
+}
+
+export const SHOPIFY_DISCOUNT_SUMMARY = {
+  discountRatePct: 68.4, // share of orders that used any discount
+  totalDiscountsGiven: 590000,
+  avgDiscountPerOrder: 764,
+};
+
+export const SHOPIFY_DISCOUNT_CODES: DiscountCode[] = [
+  { code: "FESTIVE40", uses: 412, totalDiscount: 214600, avgDiscount: 521 },
+  { code: "SCULPT10", uses: 286, totalDiscount: 51480, avgDiscount: 180 },
+  { code: "LIME15", uses: 198, totalDiscount: 44550, avgDiscount: 225 },
+  { code: "PREPAID", uses: 640, totalDiscount: 38400, avgDiscount: 60 },
+  { code: "WINBACK15", uses: 132, totalDiscount: 29040, avgDiscount: 220 },
+  { code: "BOGO", uses: 96, totalDiscount: 86400, avgDiscount: 900 },
+  { code: "POP10", uses: 154, totalDiscount: 24640, avgDiscount: 160 },
+  { code: "INFLUENCER100", uses: 88, totalDiscount: 88000, avgDiscount: 1000 },
+  { code: "FLAT300", uses: 71, totalDiscount: 21300, avgDiscount: 300 },
+  { code: "FIRST5", uses: 210, totalDiscount: 21000, avgDiscount: 100 },
+];
+
 export const SHOPIFY_TOP_CUSTOMERS: TopCustomer[] = [
   { name: "Ananya Iyer", orders: 9, spend: 24180, lastOrderDays: 4, segment: "VIP" },
   { name: "Rhea Kapoor", orders: 7, spend: 19420, lastOrderDays: 11, segment: "VIP" },

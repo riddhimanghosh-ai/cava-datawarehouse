@@ -29,30 +29,37 @@ export function StatCard({
   value,
   changePct,
   changeLabel,
+  caption,
+  icon,
   tone = "default",
 }: {
   label: string;
   value: string;
   changePct?: number;
   changeLabel?: string;
+  caption?: string;
+  icon?: ReactNode;
   tone?: "default" | "danger" | "ok";
 }) {
   const positive = (changePct ?? 0) >= 0;
+  const valueColor = tone === "danger" ? "text-[var(--danger)]" : tone === "ok" ? "text-[var(--ok)]" : "text-[var(--foreground)]";
+  const changeColor = tone === "danger" ? "text-[var(--danger)]" : tone === "ok" ? "text-[var(--ok)]" : positive ? "text-[var(--ok)]" : "text-[var(--danger)]";
+  const changeBg = changeColor === "text-[var(--ok)]" ? "bg-emerald-500/10" : "bg-red-500/10";
   return (
     <Card>
-      <div className="text-xs text-[var(--muted)] font-medium">{label}</div>
-      <div className="text-2xl font-bold mt-2 tracking-tight">{value}</div>
-      {changePct !== undefined && (
-        <div
-          className={cx(
-            "flex items-center gap-1 mt-2 text-xs font-medium",
-            tone === "danger" ? "text-[var(--danger)]" : tone === "ok" ? "text-[var(--ok)]" : positive ? "text-[var(--ok)]" : "text-[var(--danger)]"
-          )}
-        >
-          {positive ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-[10px] uppercase tracking-wider text-[var(--muted)] font-semibold leading-tight">{label}</div>
+        {icon && <span className="text-[var(--muted)] shrink-0">{icon}</span>}
+      </div>
+      <div className={cx("text-2xl font-bold mt-2 tracking-tight", valueColor)}>{value}</div>
+      {changePct !== undefined ? (
+        <div className={cx("inline-flex items-center gap-1 mt-2 rounded-md px-1.5 py-0.5 text-[11px] font-medium", changeBg, changeColor)}>
+          {positive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
           {Math.abs(changePct).toFixed(1)}% {changeLabel}
         </div>
-      )}
+      ) : caption ? (
+        <div className="mt-2 text-[11px] text-[var(--muted)]">{caption}</div>
+      ) : null}
     </Card>
   );
 }

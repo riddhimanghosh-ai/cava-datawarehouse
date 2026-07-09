@@ -160,7 +160,7 @@ export default function OverviewPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Marketing pulse" subtitle="This week" />
+          <CardHeader title="Marketing" subtitle="This week" />
           <div className="grid grid-cols-3 gap-2.5 mb-3">
             <MiniStat icon={<TrendingUp size={15} />} tone="ok" value={scalingAds} label="Scaling ads" />
             <MiniStat icon={<ArrowDownRight size={15} />} tone="danger" value={fatiguedAds} label="Need action" />

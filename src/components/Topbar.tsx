@@ -12,7 +12,6 @@ const TITLES: Record<string, { title: string; subtitle: string }> = {
   "/scm": { title: "SCM", subtitle: "SOH, DOH, on-shelf availability & category RCA" },
   "/pricing": { title: "Pricing Tracker", subtitle: "MRP & SP by platform — own SKUs vs. competitors" },
   "/cashflow": { title: "Cash Flow Management", subtitle: "Payout cycles, receivables, payables & runway" },
-  "/marketing": { title: "Marketing Pulse", subtitle: "Trends, reels, ads, deals & competitor moves" },
   "/marketing/events": { title: "Events & Campaigns", subtitle: "Log every growth lever & measure revenue lift vs. baseline" },
   "/marketing/social-comments": { title: "Social Comments", subtitle: "Every ad comment — read, classified & triaged before it costs a sale" },
   "/marketing/price-tracker": { title: "Competitor Price Tracker", subtitle: "Track competitor Shopify catalogs — price moves, launches & stock-outs" },

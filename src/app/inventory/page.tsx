@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Boxes, Calendar, Layers, PackageCheck, Store, TrendingDown } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, ProgressBar, Pills, MultiSelect, passesFilter, FilterRow, FilterBox, SwatchDot, IconTile } from "@/components/ui";
+import { Boxes, Calendar, Layers, PackageCheck, RefreshCw, Store, TrendingDown } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, ProgressBar, Pills, Tabs, MultiSelect, passesFilter, FilterRow, FilterBox, SwatchDot, IconTile } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import { CHANNELS, INVENTORY, inventorySummary, PRODUCTS } from "@/lib/data";
 
@@ -11,9 +11,16 @@ const STATUS_TABS: { value: "attention" | "All"; label: string }[] = [
   { value: "All", label: "All listings" },
 ];
 
+type Tab = "inventory" | "reorder";
+const TABS: { value: Tab; label: string; icon: React.ReactNode }[] = [
+  { value: "inventory", label: "Inventory", icon: <Boxes size={15} /> },
+  { value: "reorder", label: "Reorder recommendations", icon: <RefreshCw size={15} /> },
+];
+
 const DATE_RANGES = [{ value: "today", label: "As of today" }, { value: "7", label: "As of last week" }];
 
 export default function InventoryPage() {
+  const [tab, setTab] = useState<Tab>("inventory");
   const [range, setRange] = useState("today");
   const [channelFilter, setChannelFilter] = useState<Set<string>>(new Set());
   const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
@@ -35,7 +42,11 @@ export default function InventoryPage() {
   }, [channelFilter, categoryFilter, skuFilter, view]);
 
   return (
-    <div className="space-y-6">
+    <div>
+      <Tabs tabs={TABS} value={tab} onChange={setTab} />
+
+      {tab === "inventory" && (
+      <div className="space-y-6">
       <FilterRow>
         <FilterBox label="Date" icon={<Calendar size={12} />} value={range} onChange={setRange} options={DATE_RANGES} />
         <MultiSelect label="Channel" icon={<Store size={12} />} selected={channelFilter} onChange={setChannelFilter} options={CHANNELS.map((c) => ({ value: c, label: c }))} />
@@ -43,7 +54,7 @@ export default function InventoryPage() {
         <MultiSelect label="SKU Name" icon={<Boxes size={12} />} selected={skuFilter} onChange={setSkuFilter} options={skuOptions.map((p) => ({ value: p.sku, label: p.name }))} />
       </FilterRow>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
         <StatCard label="Critical stockouts" value={`${summary.critical} listings`} tone="danger" />
         <StatCard label="Low stock" value={`${summary.low} listings`} />
         <StatCard label="Overstock + aging" value={`${summary.overstock + summary.excess} listings`} />
@@ -114,7 +125,10 @@ export default function InventoryPage() {
           </div>
         )}
       </Card>
+      </div>
+      )}
 
+      {tab === "reorder" && (
       <Card>
         <CardHeader title="Reorder recommendations" subtitle="Auto-generated from sell-through velocity vs. on-hand cover" />
         <div className="overflow-x-auto -mx-5">
@@ -153,6 +167,7 @@ export default function InventoryPage() {
           </table>
         </div>
       </Card>
+      )}
     </div>
   );
 }

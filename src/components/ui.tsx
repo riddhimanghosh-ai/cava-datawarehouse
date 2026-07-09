@@ -1,7 +1,7 @@
 "use client";
 
 import { cx } from "@/lib/format";
-import { ArrowDownRight, ArrowUpRight, Calendar, Check, ChevronDown } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Calendar, Check, ChevronDown, Search } from "lucide-react";
 import { ReactNode, useState } from "react";
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
@@ -317,6 +317,7 @@ export function MultiSelect({
   allLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const isAll = selected.size === 0 || selected.size === options.length;
   const display = isAll
     ? allLabel
@@ -329,6 +330,10 @@ export function MultiSelect({
     next.has(v) ? next.delete(v) : next.add(v);
     onChange(next);
   };
+
+  // Show a search box for long option lists (e.g. SKU filters).
+  const searchable = options.length > 8;
+  const filtered = searchable && query.trim() ? options.filter((o) => o.label.toLowerCase().includes(query.trim().toLowerCase())) : options;
 
   return (
     <div className="relative min-w-[180px]">
@@ -347,8 +352,22 @@ export function MultiSelect({
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          <div className="absolute z-30 mt-1 w-full min-w-[200px] max-h-72 overflow-y-auto border border-[var(--border)] bg-[var(--surface)] p-1">
+          <div className="fixed inset-0 z-20" onClick={() => { setOpen(false); setQuery(""); }} />
+          <div className="absolute z-30 mt-1 w-full min-w-[220px] max-h-80 overflow-y-auto border border-[var(--border)] bg-[var(--surface)] p-1">
+            {searchable && (
+              <div className="sticky top-0 bg-[var(--surface)] p-1 pb-1.5">
+                <div className="flex items-center gap-2 border border-[var(--border)] px-2.5 py-1.5">
+                  <Search size={13} className="text-[var(--muted)] shrink-0" />
+                  <input
+                    autoFocus
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={`Search ${label.toLowerCase()}…`}
+                    className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--muted)]"
+                  />
+                </div>
+              </div>
+            )}
             <button
               onClick={() => onChange(new Set())}
               className="flex w-full items-center gap-2 px-2.5 py-1.5 text-xs text-[var(--muted)] hover:bg-[var(--surface-2)]"
@@ -358,7 +377,8 @@ export function MultiSelect({
               </span>
               {allLabel}
             </button>
-            {options.map((o) => {
+            {filtered.length === 0 && <div className="px-2.5 py-2 text-xs text-[var(--muted)]">No matches</div>}
+            {filtered.map((o) => {
               const checked = !isAll && selected.has(o.value);
               return (
                 <button

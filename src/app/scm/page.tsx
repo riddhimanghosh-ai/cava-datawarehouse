@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Boxes, Calendar, ChevronDown, ChevronRight, Gauge, Layers, Radar, Store, Tag } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, ProgressBar, Pills, FilterBox, FilterRow, MultiSelect, passesFilter, SwatchDot, IconTile } from "@/components/ui";
+import { Boxes, Calendar, ChevronDown, ChevronRight, Gauge, Layers, Store } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, ProgressBar, Tabs, FilterBox, FilterRow, MultiSelect, passesFilter, SwatchDot } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import {
   CHANNELS,
@@ -14,7 +14,6 @@ import {
   SohSummaryRow,
   OSA,
   osaSummary,
-  CATEGORY_RCA,
 } from "@/lib/data";
 
 function dohTone(doh: number): "danger" | "warning" | "ok" | "accent" {
@@ -23,8 +22,15 @@ function dohTone(doh: number): "danger" | "warning" | "ok" | "accent" {
   return "ok";
 }
 
+type Tab = "soh" | "osa";
+const TABS: { value: Tab; label: string; icon: React.ReactNode }[] = [
+  { value: "soh", label: "SCM Qcomm SOH", icon: <Boxes size={15} /> },
+  { value: "osa", label: "OSA — needs attention", icon: <Gauge size={15} /> },
+];
+
 export default function ScmPage() {
   const osaSum = osaSummary();
+  const [tab, setTab] = useState<Tab>("soh");
   const [expanded, setExpanded] = useState<Set<Channel>>(new Set());
   const [channelFilter, setChannelFilter] = useState<Set<string>>(new Set());
   const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
@@ -61,23 +67,26 @@ export default function ScmPage() {
         <StatCard label="P0 critical OSA listings" value={`${osaSum.p0}`} tone="danger" />
       </div>
 
-      <Card>
-        <FilterRow>
-          <FilterBox label="Date" icon={<Calendar size={12} />} value="09/07/26" onChange={() => {}} options={[{ value: "09/07/26", label: "09/07/2026" }]} />
-          <MultiSelect label="Channel" icon={<Store size={12} />} selected={channelFilter} onChange={setChannelFilter} options={CHANNELS.map((c) => ({ value: c, label: c }))} />
-          <MultiSelect
-            label="Category"
-            icon={<Layers size={12} />}
-            selected={categoryFilter}
-            onChange={(next) => {
-              setCategoryFilter(next);
-              setSkuFilter(new Set());
-            }}
-            options={categories.map((c) => ({ value: c, label: c }))}
-          />
-          <MultiSelect label="SKU Name" icon={<Boxes size={12} />} selected={skuFilter} onChange={setSkuFilter} options={skuOptions.map((p) => ({ value: p.sku, label: p.name }))} />
-        </FilterRow>
+      <Tabs tabs={TABS} value={tab} onChange={setTab} />
 
+      <FilterRow>
+        <FilterBox label="Date" icon={<Calendar size={12} />} value="09/07/26" onChange={() => {}} options={[{ value: "09/07/26", label: "09/07/2026" }]} />
+        <MultiSelect label="Channel" icon={<Store size={12} />} selected={channelFilter} onChange={setChannelFilter} options={CHANNELS.map((c) => ({ value: c, label: c }))} />
+        <MultiSelect
+          label="Category"
+          icon={<Layers size={12} />}
+          selected={categoryFilter}
+          onChange={(next) => {
+            setCategoryFilter(next);
+            setSkuFilter(new Set());
+          }}
+          options={categories.map((c) => ({ value: c, label: c }))}
+        />
+        <MultiSelect label="SKU Name" icon={<Boxes size={12} />} selected={skuFilter} onChange={setSkuFilter} options={skuOptions.map((p) => ({ value: p.sku, label: p.name }))} />
+      </FilterRow>
+
+      {tab === "soh" && (
+      <Card>
         <CardHeader title="SCM Qcomm SOH" subtitle="Total SOH, trailing consumption, DOH & pipeline. Click a channel to see its category split." />
         <div className="overflow-x-auto -mx-5">
           <table className="w-full text-sm min-w-[880px]">
@@ -103,7 +112,9 @@ export default function ScmPage() {
           </table>
         </div>
       </Card>
+      )}
 
+      {tab === "osa" && (
       <Card>
         <CardHeader title="OSA (On-Shelf Availability) — needs attention" subtitle="SKUs below 85% 7-day OSA, sorted by priority · matches active filters above" />
         {osaRows.length === 0 ? (
@@ -162,8 +173,7 @@ export default function ScmPage() {
           </div>
         )}
       </Card>
-
-      <CategoryRcaCard channelFilter={channelFilter} categoryFilter={categoryFilter} />
+      )}
     </div>
   );
 }
@@ -216,67 +226,5 @@ function SohCells({ row, muted }: { row: SohSummaryRow; muted?: boolean }) {
       <td className={cx("py-2.5 px-2", muted && "text-[var(--muted)]")}>{formatNumber(row.totalInTransit)}</td>
       <td className={cx("py-2.5 px-2", muted && "text-[var(--muted)]")}>{formatINR(row.avgMrp)}</td>
     </>
-  );
-}
-
-function CategoryRcaCard({ channelFilter, categoryFilter }: { channelFilter: Set<string>; categoryFilter: Set<string> }) {
-  const months = Array.from(new Set(CATEGORY_RCA.map((r) => r.month)));
-  const [month, setMonth] = useState(months[months.length - 1]);
-  const rows = CATEGORY_RCA.filter((r) => r.month === month)
-    .filter((r) => passesFilter(channelFilter, r.channel))
-    .filter((r) => passesFilter(categoryFilter, r.category));
-  const categories = Array.from(new Set(rows.map((r) => r.category)));
-  const rcaChannels = Array.from(new Set(rows.map((r) => r.channel)));
-
-  return (
-    <Card>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <CardHeader title="Category RCA (Root Cause Analysis)" subtitle="MS (Market Share) · OSA (On-Shelf Availability) · SOV (Share of Voice) by category" />
-        <Pills options={months.map((m) => ({ value: m, label: m }))} value={month} onChange={setMonth} />
-      </div>
-      <div className="overflow-x-auto -mx-5">
-        <table className="w-full text-sm min-w-[820px]">
-          <thead>
-            <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
-              <th className="py-2 px-5 font-medium">Category</th>
-              {rcaChannels.map((c) => (
-                <th key={c} className="py-2 px-2 font-medium">{c}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((cat) => (
-              <tr key={cat} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
-                <td className="py-2.5 px-5 font-medium">{cat}</td>
-                {rcaChannels.map((c) => {
-                  const cell = rows.find((r) => r.category === cat && r.channel === c);
-                  if (!cell) return <td key={c} className="py-2.5 px-2 text-[var(--muted)]">—</td>;
-                  return (
-                    <td key={c} className="py-2.5 px-2">
-                      <div className="flex items-center gap-1 text-xs">
-                        <IconTile icon={<Gauge size={12} />} tone={cell.osaPct >= 75 ? "ok" : "danger"} />
-                        <div>
-                          <div className="font-medium">{cell.marketSharePct}% MS</div>
-                          <div className="text-[var(--muted)] flex items-center gap-1">
-                            {cell.osaPct}% OSA · <Radar size={10} /> {cell.sovPct}% SOV
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-            {categories.length === 0 && (
-              <tr>
-                <td colSpan={rcaChannels.length + 1} className="py-6 text-center text-[var(--muted)]">
-                  <Tag size={14} className="inline mr-1.5" /> No data for this filter combination.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </Card>
   );
 }

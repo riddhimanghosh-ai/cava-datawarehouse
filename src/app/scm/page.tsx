@@ -1,0 +1,278 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { Boxes, Calendar, ChevronDown, ChevronRight, Gauge, Layers, Radar, Tag } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, ProgressBar, Pills, FilterBox, FilterRow, SwatchDot, IconTile } from "@/components/ui";
+import { formatINR, formatNumber, cx } from "@/lib/format";
+import {
+  Category,
+  CHANNELS,
+  Channel,
+  PRODUCTS,
+  sohByChannel,
+  sohByCategoryForChannel,
+  sohTotal,
+  SohSummaryRow,
+  OSA,
+  osaSummary,
+  CATEGORY_RCA,
+} from "@/lib/data";
+
+function dohTone(doh: number): "danger" | "warning" | "ok" | "accent" {
+  if (doh < 10 || doh > 60) return "danger";
+  if (doh < 15 || doh > 40) return "warning";
+  return "ok";
+}
+
+export default function ScmPage() {
+  const osaSum = osaSummary();
+  const [expanded, setExpanded] = useState<Set<Channel>>(new Set());
+  const [channelFilter, setChannelFilter] = useState<Channel | "All">("All");
+  const [categoryFilter, setCategoryFilter] = useState<Category | "All">("All");
+  const [skuFilter, setSkuFilter] = useState<string>("All");
+  const total = sohTotal();
+
+  const categories = Array.from(new Set(PRODUCTS.map((p) => p.category)));
+  const skuOptions = PRODUCTS.filter((p) => categoryFilter === "All" || p.category === categoryFilter);
+
+  const channelRows = channelFilter === "All" ? sohByChannel() : sohByChannel().filter((r) => r.key === channelFilter);
+
+  const toggle = (c: Channel) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(c) ? next.delete(c) : next.add(c);
+      return next;
+    });
+  };
+
+  const osaRows = useMemo(() => {
+    return OSA.filter((r) => r.priority !== "Healthy")
+      .filter((r) => channelFilter === "All" || r.channel === channelFilter)
+      .filter((r) => skuFilter === "All" || r.sku === skuFilter)
+      .filter((r) => categoryFilter === "All" || PRODUCTS.find((p) => p.sku === r.sku)?.category === categoryFilter)
+      .sort((a, b) => a.last7DayOsa - b.last7DayOsa);
+  }, [channelFilter, categoryFilter, skuFilter]);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Total SOH (Stock on Hand, units)" value={formatNumber(total.totalSoh)} />
+        <StatCard label="Blended DOH (Days on Hand)" value={`${total.doh}d`} tone={dohTone(total.doh) === "ok" ? "ok" : "danger"} />
+        <StatCard label="Avg OSA (On-Shelf Availability, 7d)" value={`${osaSum.avgOsa}%`} tone={osaSum.avgOsa >= 80 ? "ok" : "danger"} />
+        <StatCard label="P0 critical OSA listings" value={`${osaSum.p0}`} tone="danger" />
+      </div>
+
+      <Card>
+        <FilterRow>
+          <FilterBox label="Date" icon={<Calendar size={12} />} value="09/07/26" onChange={() => {}} options={[{ value: "09/07/26", label: "09/07/2026" }]} />
+          <FilterBox
+            label="Channel"
+            value={channelFilter}
+            onChange={(v) => setChannelFilter(v as Channel | "All")}
+            options={[{ value: "All", label: "All" }, ...CHANNELS.map((c) => ({ value: c, label: c }))]}
+          />
+          <FilterBox
+            label="Category"
+            icon={<Layers size={12} />}
+            value={categoryFilter}
+            onChange={(v) => {
+              setCategoryFilter(v as Category | "All");
+              setSkuFilter("All");
+            }}
+            options={[{ value: "All", label: "All" }, ...categories.map((c) => ({ value: c, label: c }))]}
+          />
+          <FilterBox
+            label="SKU Name"
+            icon={<Boxes size={12} />}
+            value={skuFilter}
+            onChange={setSkuFilter}
+            options={[{ value: "All", label: "All" }, ...skuOptions.map((p) => ({ value: p.sku, label: p.name }))]}
+          />
+        </FilterRow>
+
+        <CardHeader title="SCM Qcomm SOH" subtitle="Total SOH, trailing consumption, DOH & pipeline. Click a channel to see its category split." />
+        <div className="overflow-x-auto -mx-5">
+          <table className="w-full text-sm min-w-[880px]">
+            <thead>
+              <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
+                <th className="py-2 px-5 font-medium">Channel</th>
+                <th className="py-2 px-2 font-medium">SOH (Stock on Hand)</th>
+                <th className="py-2 px-2 font-medium">Consumption (30d)</th>
+                <th className="py-2 px-2 font-medium">DOH (Days on Hand)</th>
+                <th className="py-2 px-2 font-medium">DOH LD (Last Day)</th>
+                <th className="py-2 px-2 font-medium">Avg Shelf Life</th>
+                <th className="py-2 px-2 font-medium">Open orders</th>
+                <th className="py-2 px-2 font-medium">In transit</th>
+                <th className="py-2 px-2 font-medium">Avg MRP</th>
+              </tr>
+            </thead>
+            <tbody>
+              {channelRows.map((row) => (
+                <ChannelRows key={row.key} row={row} channel={row.key as Channel} expanded={expanded.has(row.key as Channel)} onToggle={() => toggle(row.key as Channel)} />
+              ))}
+              <SohRow row={total} bold />
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader title="OSA (On-Shelf Availability) — needs attention" subtitle="SKUs below 85% 7-day OSA, sorted by priority · matches active filters above" />
+        {osaRows.length === 0 ? (
+          <p className="text-sm text-[var(--muted)] py-6 text-center">No listings match this filter.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {osaRows.slice(0, 9).map((r) => {
+              const product = PRODUCTS.find((p) => p.sku === r.sku)!;
+              const recent = r.dailySeries.slice(-6);
+              return (
+                <div key={`${r.sku}-${r.channel}`} className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
+                  <div className="flex items-start gap-3 mb-2">
+                    <SwatchDot color={product.heroColor} />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium leading-tight truncate">{r.name}</div>
+                      <div className="text-[11px] text-[var(--muted)] mt-0.5">{r.channel}</div>
+                    </div>
+                    <Badge tone={r.priority}>{r.priority}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-[var(--muted)] mb-2">
+                    <span>7d OSA: <span className="text-[var(--foreground)] font-semibold">{r.last7DayOsa}%</span> · 15d: {r.last15DayOsa}%</span>
+                    <Badge tone={r.trend}>{r.trend}</Badge>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {recent.map((v, i) => (
+                      <span
+                        key={i}
+                        className={cx(
+                          "flex-1 text-center rounded py-1 text-[10px] font-medium",
+                          v < 55 ? "bg-red-500/15 text-red-400" : v < 72 ? "bg-orange-500/15 text-orange-400" : v < 85 ? "bg-amber-500/15 text-amber-400" : "bg-emerald-500/15 text-emerald-400"
+                        )}
+                      >
+                        {v.toFixed(0)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+
+      <CategoryRcaCard channelFilter={channelFilter} categoryFilter={categoryFilter} />
+    </div>
+  );
+}
+
+function ChannelRows({ row, channel, expanded, onToggle }: { row: SohSummaryRow; channel: Channel; expanded: boolean; onToggle: () => void }) {
+  return (
+    <>
+      <tr className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60 cursor-pointer" onClick={onToggle}>
+        <td className="py-2.5 px-5 font-medium flex items-center gap-1.5">
+          {expanded ? <ChevronDown size={14} className="text-[var(--muted)]" /> : <ChevronRight size={14} className="text-[var(--muted)]" />}
+          {channel}
+        </td>
+        <SohCells row={row} />
+      </tr>
+      {expanded &&
+        sohByCategoryForChannel(channel).map((catRow) => (
+          <tr key={catRow.key} className="border-b border-[var(--border)]/40 bg-[var(--surface-2)]/40">
+            <td className="py-2 px-5 pl-10 text-[var(--muted)]">{catRow.label}</td>
+            <SohCells row={catRow} muted />
+          </tr>
+        ))}
+    </>
+  );
+}
+
+function SohRow({ row, bold }: { row: SohSummaryRow; bold?: boolean }) {
+  return (
+    <tr className={cx("border-t border-[var(--border)]", bold && "font-semibold")}>
+      <td className="py-2.5 px-5">{row.label}</td>
+      <SohCells row={row} />
+    </tr>
+  );
+}
+
+function SohCells({ row, muted }: { row: SohSummaryRow; muted?: boolean }) {
+  const tone = dohTone(row.doh);
+  return (
+    <>
+      <td className={cx("py-2.5 px-2", muted && "text-[var(--muted)]")}>{formatNumber(row.totalSoh)}</td>
+      <td className={cx("py-2.5 px-2", muted && "text-[var(--muted)]")}>{formatNumber(row.totalConsumption)}</td>
+      <td className="py-2.5 px-2">
+        <div className="flex items-center gap-2 w-24">
+          <span className="w-8 text-right">{row.doh}d</span>
+          <ProgressBar pct={(row.doh / 90) * 100} tone={tone} />
+        </div>
+      </td>
+      <td className={cx("py-2.5 px-2", muted && "text-[var(--muted)]")}>{row.dohLastDay}d</td>
+      <td className={cx("py-2.5 px-2", muted && "text-[var(--muted)]")}>{row.avgLeadTimeDays}d</td>
+      <td className={cx("py-2.5 px-2", muted && "text-[var(--muted)]")}>{formatNumber(row.totalOpenOrders)}</td>
+      <td className={cx("py-2.5 px-2", muted && "text-[var(--muted)]")}>{formatNumber(row.totalInTransit)}</td>
+      <td className={cx("py-2.5 px-2", muted && "text-[var(--muted)]")}>{formatINR(row.avgMrp)}</td>
+    </>
+  );
+}
+
+function CategoryRcaCard({ channelFilter, categoryFilter }: { channelFilter: Channel | "All"; categoryFilter: Category | "All" }) {
+  const months = Array.from(new Set(CATEGORY_RCA.map((r) => r.month)));
+  const [month, setMonth] = useState(months[months.length - 1]);
+  const rows = CATEGORY_RCA.filter((r) => r.month === month)
+    .filter((r) => channelFilter === "All" || r.channel === channelFilter)
+    .filter((r) => categoryFilter === "All" || r.category === categoryFilter);
+  const categories = Array.from(new Set(rows.map((r) => r.category)));
+  const rcaChannels = Array.from(new Set(rows.map((r) => r.channel)));
+
+  return (
+    <Card>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <CardHeader title="Category RCA (Root Cause Analysis)" subtitle="MS (Market Share) · OSA (On-Shelf Availability) · SOV (Share of Voice) by category" />
+        <Pills options={months.map((m) => ({ value: m, label: m }))} value={month} onChange={setMonth} />
+      </div>
+      <div className="overflow-x-auto -mx-5">
+        <table className="w-full text-sm min-w-[820px]">
+          <thead>
+            <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
+              <th className="py-2 px-5 font-medium">Category</th>
+              {rcaChannels.map((c) => (
+                <th key={c} className="py-2 px-2 font-medium">{c}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map((cat) => (
+              <tr key={cat} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
+                <td className="py-2.5 px-5 font-medium">{cat}</td>
+                {rcaChannels.map((c) => {
+                  const cell = rows.find((r) => r.category === cat && r.channel === c);
+                  if (!cell) return <td key={c} className="py-2.5 px-2 text-[var(--muted)]">—</td>;
+                  return (
+                    <td key={c} className="py-2.5 px-2">
+                      <div className="flex items-center gap-1 text-xs">
+                        <IconTile icon={<Gauge size={12} />} tone={cell.osaPct >= 75 ? "ok" : "danger"} />
+                        <div>
+                          <div className="font-medium">{cell.marketSharePct}% MS</div>
+                          <div className="text-[var(--muted)] flex items-center gap-1">
+                            {cell.osaPct}% OSA · <Radar size={10} /> {cell.sovPct}% SOV
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+            {categories.length === 0 && (
+              <tr>
+                <td colSpan={rcaChannels.length + 1} className="py-6 text-center text-[var(--muted)]">
+                  <Tag size={14} className="inline mr-1.5" /> No data for this filter combination.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+}

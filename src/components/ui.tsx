@@ -1,5 +1,5 @@
 import { cx } from "@/lib/format";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, ChevronDown } from "lucide-react";
 import { ReactNode } from "react";
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
@@ -164,6 +164,47 @@ export function IconTile({ icon, tone = "default" }: { icon: ReactNode; tone?: "
   const bg =
     tone === "danger" ? "bg-red-500/15 text-red-400" : tone === "ok" ? "bg-emerald-500/15 text-emerald-400" : tone === "accent" ? "bg-[var(--accent)]/15 text-[var(--accent)]" : "bg-[var(--surface-2)] text-[var(--muted)]";
   return <div className={cx("h-9 w-9 rounded-xl flex items-center justify-center shrink-0", bg)}>{icon}</div>;
+}
+
+export function FilterBox({
+  label,
+  value,
+  options,
+  onChange,
+  icon,
+}: {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+  icon?: ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 min-w-[180px]">
+      <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)] mb-1">
+        {icon}
+        {label}
+      </div>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full appearance-none bg-transparent text-sm font-medium outline-none pr-5 cursor-pointer"
+        >
+          {options.map((o) => (
+            <option key={o.value} value={o.value} className="bg-[var(--surface)] text-[var(--foreground)]">
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown size={13} className="absolute right-0 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none" />
+      </div>
+    </div>
+  );
+}
+
+export function FilterRow({ children }: { children: ReactNode }) {
+  return <div className="flex flex-wrap items-stretch gap-3 mb-6">{children}</div>;
 }
 
 export function Pills<T extends string>({

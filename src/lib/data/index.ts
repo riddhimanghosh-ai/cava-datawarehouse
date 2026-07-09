@@ -7,3 +7,5 @@ export * from "./marketing";
 export * from "./osa";
 export * from "./categoryRca";
 export * from "./salesPlan";
+export * from "./demandPlan";
+export * from "./pricing";

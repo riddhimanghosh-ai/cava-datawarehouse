@@ -5,9 +5,12 @@ import { Bell, Search } from "lucide-react";
 
 const TITLES: Record<string, { title: string; subtitle: string }> = {
   "/": { title: "Overview", subtitle: "Cross-channel health at a glance" },
-  "/inventory": { title: "Inventory Management", subtitle: "SOH, DOH, on-shelf availability & category RCA" },
-  "/sales": { title: "Sales", subtitle: "Primary vs secondary, daily sales report & offtake" },
-  "/forecasting": { title: "Demand Forecasting", subtitle: "What to buy, restock, or pull back on — and why" },
+  "/sales/primary-secondary": { title: "Primary & Secondary Sales", subtitle: "Sell-in vs. sell-through, and the gap between them" },
+  "/sales/daily-report": { title: "Daily Sales Report", subtitle: "MTD performance vs. plan, forecast, LM & LY, plus offtake" },
+  "/inventory": { title: "Inventory", subtitle: "SKU-level stock health, reorder recommendations" },
+  "/forecasting": { title: "Demand Forecasting", subtitle: "Monthly demand plan by channel vs. production capacity" },
+  "/scm": { title: "SCM", subtitle: "SOH, DOH, on-shelf availability & category RCA" },
+  "/pricing": { title: "Pricing Tracker", subtitle: "MRP & SP by platform — own SKUs vs. competitors" },
   "/cashflow": { title: "Cash Flow Management", subtitle: "Payout cycles, receivables, payables & runway" },
   "/marketing": { title: "Marketing Pulse", subtitle: "Trends, reels, ads, deals & competitor moves" },
 };

@@ -3,7 +3,7 @@ import { Category, CHANNELS, Channel } from "./products";
 
 const rng = seededRandom(6650);
 
-const CATEGORIES: Category[] = ["Leggings", "Sports Bra", "Joggers", "Oversized Tee", "Sports Set", "Shorts", "Jacket"];
+const CATEGORIES: Category[] = ["Leggings", "Sports Bra", "Joggers", "T-Shirts", "Skorts", "Flare Pants", "Jacket"];
 const MONTHS = ["Apr'26", "May'26", "Jun'26"];
 
 export interface CategoryRcaRow {

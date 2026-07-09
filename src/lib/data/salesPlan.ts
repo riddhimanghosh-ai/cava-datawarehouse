@@ -177,7 +177,7 @@ export function dsrTotals() {
 
 // --- Offtake: MTD-till comparison by channel & category ---------------------
 
-const OFFTAKE_CATEGORIES: Category[] = ["Leggings", "Sports Bra", "Joggers", "Oversized Tee", "Sports Set", "Shorts", "Jacket"];
+const OFFTAKE_CATEGORIES: Category[] = ["Leggings", "Sports Bra", "Joggers", "T-Shirts", "Skorts", "Flare Pants", "Jacket"];
 const OFFTAKE_CHANNELS: Channel[] = ["Zepto", "Amazon", "Myntra", "Nykaa Fashion", "Shopify D2C"];
 
 export interface OfftakeRow {

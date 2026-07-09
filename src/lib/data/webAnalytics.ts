@@ -74,10 +74,10 @@ export interface SalesByCategory {
 export const SHOPIFY_SALES_BY_CATEGORY: SalesByCategory[] = [
   { category: "Leggings", revenue: 1680000, orders: 812, units: 1102, discountPct: 11 },
   { category: "Sports Bra", revenue: 940000, orders: 640, units: 921, discountPct: 9 },
-  { category: "Sports Set", revenue: 712000, orders: 268, units: 302, discountPct: 18 },
+  { category: "Skorts", revenue: 712000, orders: 268, units: 302, discountPct: 18 },
   { category: "Joggers", revenue: 486000, orders: 214, units: 236, discountPct: 14 },
-  { category: "Oversized Tee", revenue: 262000, orders: 248, units: 318, discountPct: 7 },
-  { category: "Shorts", revenue: 118000, orders: 96, units: 121, discountPct: 12 },
+  { category: "T-Shirts", revenue: 262000, orders: 248, units: 318, discountPct: 7 },
+  { category: "Flare Pants", revenue: 118000, orders: 96, units: 121, discountPct: 12 },
   { category: "Jacket", revenue: 102000, orders: 40, units: 42, discountPct: 5 },
 ];
 
@@ -105,7 +105,7 @@ export const SHOPIFY_DISCOUNT_SUMMARY = {
 export const SHOPIFY_DISCOUNT_CODES: DiscountCode[] = [
   { code: "FESTIVE40", uses: 412, totalDiscount: 214600, avgDiscount: 521 },
   { code: "SCULPT10", uses: 286, totalDiscount: 51480, avgDiscount: 180 },
-  { code: "LIME15", uses: 198, totalDiscount: 44550, avgDiscount: 225 },
+  { code: "MESH15", uses: 198, totalDiscount: 44550, avgDiscount: 225 },
   { code: "PREPAID", uses: 640, totalDiscount: 38400, avgDiscount: 60 },
   { code: "WINBACK15", uses: 132, totalDiscount: 29040, avgDiscount: 220 },
   { code: "BOGO", uses: 96, totalDiscount: 86400, avgDiscount: 900 },
@@ -134,12 +134,12 @@ export interface TopProduct {
 }
 
 export const SHOPIFY_TOP_PRODUCTS: TopProduct[] = [
-  { name: "Sculpt High-Waist Legging – Jet Black", sku: "CV-LEG-SCLP-BLK", revenue: 892000, units: 496, refundRate: 1.8, conversion: 4.6 },
-  { name: "Power Hold Sports Bra – Black", sku: "CV-BRA-PWR-BLK", revenue: 461000, units: 355, refundRate: 2.1, conversion: 4.1 },
-  { name: "Power Hold Sports Bra – Electric Lime", sku: "CV-BRA-PWR-ELC", revenue: 388000, units: 299, refundRate: 2.4, conversion: 5.2 },
-  { name: "Core Co-ord Set – Black", sku: "CV-SET-CORE-BLK", revenue: 351000, units: 121, refundRate: 3.2, conversion: 3.4 },
-  { name: "Flex Seamless Legging – Nude Blush", sku: "CV-LEG-FLEX-NUD", revenue: 318000, units: 159, refundRate: 2.0, conversion: 4.9 },
-  { name: "Cloud Fleece Jogger – Heather Grey", sku: "CV-JOG-CLD-GRY", revenue: 154000, units: 70, refundRate: 4.1, conversion: 2.2 },
+  { name: "Black Hourglass Snug Leggings", sku: "CV-LEG-HG-BLK", revenue: 892000, units: 496, refundRate: 1.8, conversion: 4.6 },
+  { name: "Black Cross Back Sports Bra", sku: "CV-BRA-CB-BLK", revenue: 461000, units: 355, refundRate: 2.1, conversion: 4.1 },
+  { name: "Wine Hyper Mesh Sports Bra", sku: "CV-BRA-HM-WNE", revenue: 388000, units: 299, refundRate: 2.4, conversion: 5.2 },
+  { name: "Black Swirl Tennis Skort", sku: "CV-SKT-SWL-BLK", revenue: 351000, units: 121, refundRate: 3.2, conversion: 3.4 },
+  { name: "Auburn Seamless Cinched Leggings", sku: "CV-LEG-SC-AUB", revenue: 318000, units: 159, refundRate: 2.0, conversion: 4.9 },
+  { name: "Navy Everywear Joggers", sku: "CV-JOG-EW-NVY", revenue: 154000, units: 70, refundRate: 4.1, conversion: 2.2 },
 ];
 
 export interface ShopifyOrder {
@@ -259,9 +259,9 @@ export interface BehaviorRow {
 export const GA_BEHAVIOR_PAGES: BehaviorRow[] = [
   { page: "/ (Home)", pageviews: 118200, avgTime: "0m 52s", bouncePct: 41 },
   { page: "/collections/leggings", pageviews: 72400, avgTime: "1m 34s", bouncePct: 32 },
-  { page: "/products/sculpt-legging-black", pageviews: 54800, avgTime: "2m 18s", bouncePct: 28 },
-  { page: "/collections/sports-bra", pageviews: 41900, avgTime: "1m 21s", bouncePct: 36 },
-  { page: "/products/power-bra-lime", pageviews: 33600, avgTime: "2m 04s", bouncePct: 30 },
+  { page: "/products/black-hourglass-snug-leggings", pageviews: 54800, avgTime: "2m 18s", bouncePct: 28 },
+  { page: "/collections/sports-bras", pageviews: 41900, avgTime: "1m 21s", bouncePct: 36 },
+  { page: "/products/wine-hyper-mesh-sports-bra", pageviews: 33600, avgTime: "2m 04s", bouncePct: 30 },
   { page: "/pages/size-guide", pageviews: 21200, avgTime: "1m 47s", bouncePct: 22 },
   { page: "/cart", pageviews: 20880, avgTime: "1m 12s", bouncePct: 18 },
 ];

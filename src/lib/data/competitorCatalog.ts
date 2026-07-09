@@ -33,7 +33,7 @@ export interface CompetitorStore {
   recentChanges: RecentChange[];
 }
 
-const CATEGORIES = ["Leggings", "Sports Bra", "Joggers", "Co-ord Set", "Tees", "Shorts", "Outerwear"];
+const CATEGORIES = ["Leggings", "Sports Bra", "Joggers", "Co-ord Set", "Tees", "Flare Pants", "Outerwear"];
 
 function buildProducts(prefix: string, count: number, priceLow: number, priceHigh: number): CompetitorProduct[] {
   const titles: Record<string, string[]> = {
@@ -42,7 +42,7 @@ function buildProducts(prefix: string, count: number, priceLow: number, priceHig
     Joggers: ["Cloud Jogger", "Tapered Lounge Jogger"],
     "Co-ord Set": ["Move Co-ord Set", "Studio Two-Piece"],
     Tees: ["Boxy Crop Tee", "Oversized Cotton Tee"],
-    Shorts: ["Run Shorts 3in", "Bike Shorts"],
+    "Flare Pants": ["Flared Legging", "Wide Leg Flare Pant"],
     Outerwear: ["Wind Shell Jacket", "Zip Hoodie"],
   };
   const out: CompetitorProduct[] = [];

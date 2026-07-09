@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, Boxes, ChevronDown, ChevronRight, Factory, Layers } from "lucide-react";
-import { Card, CardHeader, StatCard, FilterBox, FilterRow, MultiSelect, passesFilter } from "@/components/ui";
+import { AlertTriangle, Boxes, ChevronDown, ChevronRight, ClipboardList, Factory, Layers, Table } from "lucide-react";
+import { Card, CardHeader, StatCard, Tabs, FilterBox, FilterRow, MultiSelect, passesFilter } from "@/components/ui";
 import { formatNumber, cx } from "@/lib/format";
 import { CHANNELS, Channel, DEMAND_PLANS, DEMAND_PLAN_MONTHS, PRODUCTS } from "@/lib/data";
 
@@ -17,7 +17,14 @@ const ACTION_TONE_CLASSES: Record<string, string> = {
   danger: "bg-[var(--danger)]/10 text-[var(--danger)] border-[var(--danger)]/30",
 };
 
+type Tab = "plan" | "actions";
+const TABS: { value: Tab; label: string; icon: React.ReactNode }[] = [
+  { value: "plan", label: "Demand Plan", icon: <Table size={15} /> },
+  { value: "actions", label: "Planner Actions", icon: <ClipboardList size={15} /> },
+];
+
 export default function ForecastingPage() {
+  const [tab, setTab] = useState<Tab>("plan");
   const [horizon, setHorizon] = useState("6");
   const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
   const [skus, setSkus] = useState<Set<string>>(new Set());
@@ -67,34 +74,43 @@ export default function ForecastingPage() {
   const overCapacityCount = selectedPlans.reduce((s, p) => s + p.months.slice(0, Number(horizon)).filter((m) => m.action.tone === "danger").length, 0);
   const totalCapacity = selectedPlans.reduce((s, p) => s + p.monthlyCapacity, 0);
 
+  // Every at/over-capacity SKU-month in the horizon, worst first.
+  const actionItems = selectedPlans
+    .flatMap((p) => p.months.slice(0, Number(horizon)).filter((m) => m.action.tone !== "ok").map((m) => ({ plan: p, m })))
+    .sort((a, b) => b.m.action.pct - a.m.action.pct);
+
   return (
-    <div className="space-y-6">
+    <div>
+      <Tabs tabs={TABS} value={tab} onChange={setTab} />
+
+      <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
         <StatCard label="SKUs in view" value={`${selectedPlans.length} of ${DEMAND_PLANS.length}`} />
         <StatCard label="Channels selected" value={`${selectedChannels.length} of ${CHANNELS.length}`} />
-        <StatCard label="Over-capacity SKU-months" value={`${overCapacityCount}`} tone={overCapacityCount > 0 ? "danger" : "ok"} />
+        <StatCard label="Actions pending" value={`${actionItems.length}`} tone={actionItems.length > 0 ? "danger" : "ok"} caption={`${overCapacityCount} over capacity`} />
         <StatCard label="Combined monthly capacity" value={`${formatNumber(totalCapacity)} units`} />
       </div>
 
-      <Card>
-        <FilterRow>
-          <FilterBox label="Forecast Horizon" icon={<Layers size={12} />} value={horizon} onChange={setHorizon} options={HORIZONS} />
-          <MultiSelect
-            label="Category"
-            icon={<Layers size={12} />}
-            selected={categoryFilter}
-            onChange={(n) => { setCategoryFilter(n); setSkus(new Set()); }}
-            options={categories.map((c) => ({ value: c, label: c }))}
-          />
-          <MultiSelect
-            label="SKU Name"
-            icon={<Boxes size={12} />}
-            selected={skus}
-            onChange={setSkus}
-            options={skuOptions.map((p) => ({ value: p.sku, label: p.name }))}
-          />
-        </FilterRow>
+      <FilterRow>
+        <FilterBox label="Forecast Horizon" icon={<Layers size={12} />} value={horizon} onChange={setHorizon} options={HORIZONS} />
+        <MultiSelect
+          label="Category"
+          icon={<Layers size={12} />}
+          selected={categoryFilter}
+          onChange={(n) => { setCategoryFilter(n); setSkus(new Set()); }}
+          options={categories.map((c) => ({ value: c, label: c }))}
+        />
+        <MultiSelect
+          label="SKU Name"
+          icon={<Boxes size={12} />}
+          selected={skus}
+          onChange={setSkus}
+          options={skuOptions.map((p) => ({ value: p.sku, label: p.name }))}
+        />
+      </FilterRow>
 
+      {tab === "plan" && (
+      <Card>
         <CardHeader
           title="Demand Plan by Channel"
           subtitle={`${selectedPlans.length} SKU${selectedPlans.length === 1 ? "" : "s"} · ${selectedChannels.join(", ")} · click a month to see the per-SKU split`}
@@ -125,7 +141,7 @@ export default function ForecastingPage() {
                 {selectedChannels.map((c) => (
                   <th key={c} className="py-2 px-2 font-medium text-right">{c}</th>
                 ))}
-                <th className="py-2 px-5 font-medium">Planner action</th>
+                <th className="py-2 px-5 font-medium">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -139,6 +155,47 @@ export default function ForecastingPage() {
             </tbody>
           </table>
         </div>
+      </Card>
+      )}
+
+      {tab === "actions" && (
+      <>
+      <Card>
+        <CardHeader
+          title="Planner Actions"
+          subtitle={`What needs to be done across the next ${horizon} months — every SKU-month at or over production capacity, worst first`}
+        />
+        {actionItems.length === 0 ? (
+          <p className="text-sm text-[var(--muted)] py-6 text-center">Nothing to action — all SKU-months are within capacity on this filter.</p>
+        ) : (
+          <div className="space-y-2.5">
+            {actionItems.map(({ plan, m }) => (
+              <div
+                key={`${plan.sku}-${m.month}`}
+                className={cx(
+                  "flex flex-wrap items-center gap-4 border px-4 py-3",
+                  m.action.tone === "danger" ? "border-[var(--danger)]/30 bg-[var(--danger)]/[0.04]" : "border-[var(--warning)]/30 bg-[var(--warning)]/[0.04]"
+                )}
+              >
+                <div className={cx("h-9 w-9 border flex items-center justify-center shrink-0", m.action.tone === "danger" ? "border-[var(--danger)]/40 text-[var(--danger)]" : "border-[var(--warning)]/40 text-[var(--warning)]")}>
+                  <AlertTriangle size={15} strokeWidth={1.5} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium">
+                    {m.month} — {plan.name}
+                  </div>
+                  <div className="text-[11px] text-[var(--muted)] mt-0.5">
+                    Need to produce {formatNumber(m.needToProduce)} vs {formatNumber(plan.monthlyCapacity)}/mo capacity · demand {formatNumber(m.totalDemand)} · in stock {formatNumber(m.inStock)}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className={cx("text-sm font-semibold tnum", m.action.tone === "danger" ? "text-[var(--danger)]" : "text-[var(--warning)]")}>{m.action.pct}% of capacity</div>
+                  <div className="text-[11px] text-[var(--muted)] max-w-[320px]">{m.action.label.replace(/^[^—]*— /, "")}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
 
       <Card>
@@ -184,6 +241,9 @@ export default function ForecastingPage() {
           </table>
         </div>
       </Card>
+      </>
+      )}
+      </div>
     </div>
   );
 }
@@ -248,7 +308,7 @@ function MonthRows({
             ))}
             <td className="py-2 px-5">
               <span className={cx("inline-flex items-center gap-1.5 border px-2 py-0.5 text-[10px] font-medium whitespace-nowrap", ACTION_TONE_CLASSES[m.action.tone])}>
-                {m.action.label}
+                {m.action.tone === "ok" ? "On track" : `${m.action.pct}% of capacity — see Planner Actions`}
               </span>
             </td>
           </tr>

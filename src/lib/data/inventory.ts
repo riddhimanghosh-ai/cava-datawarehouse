@@ -45,11 +45,11 @@ for (const product of PRODUCTS) {
   for (const channel of CHANNELS) {
     if (!AVAILABILITY[channel].includes(product.sku)) continue;
 
-    // Bestsellers (Sculpt Legging Black, Power Bra Black/Lime) run hot and
-    // frequently understock; Sage Tee and Berry Set overshot demand forecasts
+    // Bestsellers (Hourglass Snug Black, Cross Back Bra, Hyper Mesh Bra) run hot and
+    // frequently understock; the Pine Supima Tee and Plie Skort overshot demand forecasts
     // and are sitting in excess. Everything else sits near a plausible middle.
-    const isHeroRunner = ["CV-LEG-SCLP-BLK", "CV-BRA-PWR-BLK", "CV-BRA-PWR-ELC"].includes(product.sku);
-    const isOverbought = ["CV-TEE-OVR-SGE", "CV-SET-CORE-BRY", "CV-JOG-CLD-GRY"].includes(product.sku);
+    const isHeroRunner = ["CV-LEG-HG-BLK", "CV-BRA-CB-BLK", "CV-BRA-HM-WNE"].includes(product.sku);
+    const isOverbought = ["CV-TEE-SU-PNE", "CV-SKT-PLE-BLK", "CV-JOG-EW-NVY"].includes(product.sku);
 
     const baseVelocity = channel === "Shopify D2C" ? rng.range(9, 22) : channel === "Amazon" ? rng.range(6, 16) : channel === "Myntra" ? rng.range(5, 13) : channel === "Zepto" ? rng.range(3, 9) : rng.range(2, 7);
     const avgDailySales = Math.round((isHeroRunner ? baseVelocity * 1.9 : isOverbought ? baseVelocity * 0.55 : baseVelocity) * 10) / 10;

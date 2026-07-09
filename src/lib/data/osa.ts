@@ -30,8 +30,8 @@ for (const product of PRODUCTS) {
   for (const channel of CHANNELS) {
     if (!AVAILABILITY[channel].includes(product.sku)) continue;
 
-    const isHeroRunner = ["CV-LEG-SCLP-BLK", "CV-BRA-PWR-BLK", "CV-BRA-PWR-ELC"].includes(product.sku);
-    const isProblematic = ["CV-TEE-OVR-SGE", "CV-SET-CORE-BRY", "CV-JOG-CLD-GRY"].includes(product.sku);
+    const isHeroRunner = ["CV-LEG-HG-BLK", "CV-BRA-CB-BLK", "CV-BRA-HM-WNE"].includes(product.sku);
+    const isProblematic = ["CV-TEE-SU-PNE", "CV-SKT-PLE-BLK", "CV-JOG-EW-NVY"].includes(product.sku);
 
     let base = isProblematic ? rng.range(38, 58) : isHeroRunner ? rng.range(78, 94) : rng.range(60, 88);
     const dailySeries: number[] = [];

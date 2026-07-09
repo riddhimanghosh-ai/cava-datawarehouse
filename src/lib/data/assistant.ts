@@ -22,12 +22,12 @@ export const CANNED_ANSWERS: CannedAnswer[] = [
   {
     keywords: ["stockout", "stock out", "understock", "out of stock", "reorder", "low stock", "inventory risk"],
     answer:
-      "3 channel-SKU listings are critical (under 5 days of cover):\n• Sculpt High-Waist Legging – Jet Black (Shopify D2C) — 2.5d cover, 42/day velocity\n• Power Hold Sports Bra – Black (Amazon) — 3.1d cover\n• Power Hold Sports Bra – Electric Lime (Zepto) — 4.2d cover\n\nRecommended: raise the Sculpt Legging PO by ~35% before Jul 20 and expedite the Lime bra batch to Zepto dark stores. Est. lost sales if you don't restock in 14 days: ₹6.1L.",
+      "3 channel-SKU listings are critical (under 5 days of cover):\n• Black Hourglass Snug Leggings (Shopify D2C) — 2.5d cover, 42/day velocity\n• Black Cross Back Sports Bra (Amazon) — 3.1d cover\n• Wine Hyper Mesh Sports Bra (Zepto) — 4.2d cover\n\nRecommended: raise the Hourglass Snug PO by ~35% before Jul 20 and expedite the Hyper Mesh bra batch to Zepto dark stores. Est. lost sales if you don't restock in 14 days: ₹6.1L.",
   },
   {
     keywords: ["overstock", "excess", "aging", "capital stuck", "dead stock"],
     answer:
-      "₹18.4L of capital is stuck in slow-movers:\n• Oversized Rib Tee – Sage — 112 days of cover, 24% sell-through\n• Core Co-ord Set – Berry — aging 90d+ in FC\n• Cloud Fleece Jogger – Heather Grey — demand softening with monsoon\n\nRecommended: bundle the Berry set with a bestseller legging and route the Sage tee to a Myntra clearance to free up working capital.",
+      "₹18.4L of capital is stuck in slow-movers:\n• Pine Supima Crew Neck T-Shirt — 112 days of cover, 24% sell-through\n• Black Plie Pleated Skort — aging 90d+ in FC\n• Navy Everywear Joggers — demand softening with monsoon\n\nRecommended: bundle the Plie Skort with a bestseller legging and route the Pine Supima tee to a Myntra clearance to free up working capital.",
   },
   {
     keywords: ["cash", "runway", "receivable", "payable", "burn", "payout"],
@@ -37,7 +37,7 @@ export const CANNED_ANSWERS: CannedAnswer[] = [
   {
     keywords: ["campaign", "pause", "roas", "ad", "fatigue", "creative"],
     answer:
-      "2 campaigns need action:\n• Sage Tee – Prospecting — ROAS 1.5x, down 41% WoW → pause recommended\n• Berry Co-ord – Broad Prospecting — ROAS 1.5x, fatiguing (CTR 1.1%)\n\nScale winners instead: Electric Lime Bra UGC (5.06x, +34%) and Sculpt Legging Retargeting (5.29x). Shift the ~₹3.3L from the two weak campaigns into these two.",
+      "2 campaigns need action:\n• Pine Supima Tee – Prospecting — ROAS 1.5x, down 41% WoW → pause recommended\n• Plie Skort – Broad Prospecting — ROAS 1.5x, fatiguing (CTR 1.1%)\n\nScale winners instead: Hyper Mesh Bra UGC (5.06x, +34%) and Hourglass Snug Retargeting (5.29x). Shift the ~₹3.3L from the two weak campaigns into these two.",
   },
   {
     keywords: ["competitor", "rival", "blissclub", "kica", "out of stock competitor", "sniper"],
@@ -62,17 +62,17 @@ export const CANNED_ANSWERS: CannedAnswer[] = [
   {
     keywords: ["osa", "on-shelf", "availability", "shelf", "crashing", "category rca"],
     answer:
-      "Average 7-day OSA is 71%, below the 80% target. Protein Powder-equivalent lines are crashing hardest — 6 SKUs are P0-critical and trending down on Blinkit/Zepto.\n\nThe Sage Tee and Berry Set are the biggest OSA laggards. Category RCA shows Leggings holding share while Co-ord Sets lose both OSA and share of voice month-over-month.",
+      "Average 7-day OSA is 71%, below the 80% target. Skorts and heavier joggers are crashing hardest — 6 SKUs are P0-critical and trending down on Blinkit/Zepto.\n\nThe Pine Supima Tee and Plie Pleated Skort are the biggest OSA laggards. Category RCA shows Leggings holding share while Skorts lose both OSA and share of voice month-over-month.",
   },
   {
     keywords: ["revenue", "sales", "top product", "best seller", "bestseller", "how much"],
     answer:
-      "Last 30 days: ₹42.6L on Shopify D2C (+12.4%), blended across all channels the mix is Shopify > Amazon > Myntra > Nykaa > Zepto (Zepto ramping fastest).\n\nTop revenue SKU is the Sculpt High-Waist Legging – Jet Black (₹8.9L, 496 units, 4.6% PDP conversion), followed by the Power Hold Bra in Black and Electric Lime.",
+      "Last 30 days: ₹42.6L on Shopify D2C (+12.4%), blended across all channels the mix is Shopify > Amazon > Myntra > Nykaa > Zepto (Zepto ramping fastest).\n\nTop revenue SKU is the Black Hourglass Snug Leggings (₹8.9L, 496 units, 4.6% PDP conversion), followed by the Cross Back Bra in Black and the Wine Hyper Mesh.",
   },
   {
     keywords: ["keyword", "trending", "search", "seo", "reel", "viral"],
     answer:
-      "Trending up: 'cava sculpt leggings review' (+85%), 'blissclub vs cava' (+90%, you rank #1), and 'squat proof leggings' (+55% — you're not ranking yet, worth a landing page).\n\nOn social, the #CavaSculptCheck reel hit 2.1M views (9.9% engagement) and is driving branded search — keep feeding budget to that creative.",
+      "Trending up: 'cava sculpt leggings review' (+85%), 'blissclub vs cava' (+90%, you rank #1), and 'squat proof leggings' (+55% — you're not ranking yet, worth a landing page).\n\nOn social, the #CavaSquatProof reel hit 2.1M views (9.9% engagement) and is driving branded search — keep feeding budget to that creative.",
   },
 ];
 

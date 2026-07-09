@@ -55,7 +55,7 @@ export const CODE_QUALITY: CodeQuality[] = [
     insight: "Targeted at lapsed customers — 78% repeat share means it's reactivating real buyers, not subsidising bargain hunters. Highest-quality code in the set.",
   },
   {
-    code: "LIME15",
+    code: "MESH15",
     klass: "Mixed",
     dealHunterScore: 55,
     orders: 198,
@@ -64,7 +64,7 @@ export const CODE_QUALITY: CodeQuality[] = [
     discountGiven: 44550,
     newCustSharePct: 58,
     repeatSharePct: 42,
-    insight: "Launch code for the Electric Lime drop — a healthy new/repeat mix. Fine for a launch window; retire it once the drop matures.",
+    insight: "Launch code for the Hyper Mesh drop — a healthy new/repeat mix. Fine for a launch window; retire it once the drop matures.",
   },
   {
     code: "INFLUENCER100",

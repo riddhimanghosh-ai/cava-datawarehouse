@@ -49,11 +49,11 @@ export const BRAND_EVENTS: BrandEvent[] = [
     ordersDriven: 2740,
     revenueTarget: 5000000,
     actualRevenue: 6232000,
-    note: "Best single lift of the year. Sculpt Legging + Power Bra bundles drove 60% of orders.",
+    note: "Best single lift of the year. Hourglass Snug + Cross Back Bra bundles drove 60% of orders.",
   },
   {
     id: "ev-lime-drop",
-    name: "Electric Lime Collection Drop",
+    name: "Hyper Mesh Collection Drop",
     type: "Product Drop",
     status: "ended",
     startDate: "2026-05-14",
@@ -124,11 +124,11 @@ export const BRAND_EVENTS: BrandEvent[] = [
     ordersDriven: 0,
     revenueTarget: 4200000,
     actualRevenue: 0,
-    note: "Deal submissions locked. Sculpt Legging + Core Set entered as lightning deals.",
+    note: "Deal submissions locked. Hourglass Snug + Swirl Skort entered as lightning deals.",
   },
   {
     id: "ev-indep-drop",
-    name: "Independence Edit — Windbreak Jacket",
+    name: "Independence Edit — Sculptor Jacket",
     type: "Product Drop",
     status: "upcoming",
     startDate: "2026-08-14",
@@ -171,12 +171,12 @@ export interface EventMetrics {
 }
 
 const TOP_PRODUCT_POOL = [
-  "Sculpt High-Waist Legging – Jet Black",
-  "Power Hold Sports Bra – Black",
-  "Power Hold Sports Bra – Electric Lime",
-  "Core Co-ord Set – Black",
-  "Flex Seamless Legging – Nude Blush",
-  "Cloud Fleece Jogger – Heather Grey",
+  "Black Hourglass Snug Leggings",
+  "Black Cross Back Sports Bra",
+  "Wine Hyper Mesh Sports Bra",
+  "Black Swirl Tennis Skort",
+  "Auburn Seamless Cinched Leggings",
+  "Navy Everywear Joggers",
 ];
 
 export function eventMetrics(e: BrandEvent): EventMetrics {

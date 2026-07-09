@@ -25,9 +25,9 @@ export const TRENDING_KEYWORDS: TrendingKeyword[] = [
   { keyword: "seamless leggings india", platform: "Google Search", volumeTrend: sparkline(2200, 0.42), changePct: 42, cavaRanking: 4, intent: "high" },
   { keyword: "cava sculpt leggings review", platform: "Google Search", volumeTrend: sparkline(180, 0.85), changePct: 85, cavaRanking: 1, intent: "high" },
   { keyword: "nude sports bra", platform: "Instagram", volumeTrend: sparkline(950, 0.31), changePct: 31, cavaRanking: 6, intent: "medium" },
-  { keyword: "gym co-ord set women", platform: "Google Search", volumeTrend: sparkline(1400, 0.18), changePct: 18, cavaRanking: 9, intent: "medium" },
+  { keyword: "tennis skort women", platform: "Google Search", volumeTrend: sparkline(1400, 0.18), changePct: 18, cavaRanking: 9, intent: "medium" },
   { keyword: "squat proof leggings", platform: "Pinterest", volumeTrend: sparkline(700, 0.55), changePct: 55, cavaRanking: null, intent: "high" },
-  { keyword: "electric lime activewear", platform: "Instagram", volumeTrend: sparkline(310, 0.63), changePct: 63, cavaRanking: 2, intent: "medium" },
+  { keyword: "wine sports bra", platform: "Instagram", volumeTrend: sparkline(310, 0.63), changePct: 63, cavaRanking: 2, intent: "medium" },
   { keyword: "monsoon workout jacket", platform: "Google Search", volumeTrend: sparkline(260, 0.22), changePct: 22, cavaRanking: null, intent: "low" },
   { keyword: "blissclub vs cava", platform: "Google Search", volumeTrend: sparkline(140, 0.9), changePct: 90, cavaRanking: 1, intent: "high" },
 ];
@@ -46,12 +46,12 @@ export interface ReelPerformance {
 }
 
 export const REELS: ReelPerformance[] = [
-  { id: "r1", caption: "#CavaSculptCheck – squat test in the Jet Black legging", postedDaysAgo: 6, views: 2_140_000, likes: 187_000, comments: 4_200, shares: 22_500, engagementRate: 9.9, featuredSku: "CV-LEG-SCLP-BLK", status: "viral" },
-  { id: "r2", caption: "5AM gym routine ft. Electric Lime bra", postedDaysAgo: 3, views: 640_000, likes: 51_000, comments: 980, shares: 6_100, engagementRate: 9.1, featuredSku: "CV-BRA-PWR-ELC", status: "trending" },
-  { id: "r3", caption: "Pack with me: monsoon workout edit", postedDaysAgo: 9, views: 118_000, likes: 6_400, comments: 210, shares: 340, engagementRate: 6.0, featuredSku: "CV-JKT-WIND-NVY", status: "steady" },
-  { id: "r4", caption: "Sage tee styling try-on haul", postedDaysAgo: 11, views: 42_000, likes: 1_100, comments: 38, shares: 22, engagementRate: 2.8, featuredSku: "CV-TEE-OVR-SGE", status: "underperforming" },
-  { id: "r5", caption: "Co-ord set transition trend", postedDaysAgo: 2, views: 289_000, likes: 24_000, comments: 610, shares: 2_900, engagementRate: 9.5, featuredSku: "CV-SET-CORE-BLK", status: "trending" },
-  { id: "r6", caption: "Nude Blush legging on 5 skin tones", postedDaysAgo: 5, views: 510_000, likes: 46_000, comments: 890, shares: 5_200, engagementRate: 10.2, featuredSku: "CV-LEG-FLEX-NUD", status: "viral" },
+  { id: "r1", caption: "#CavaSquatProof – squat test in the Black Hourglass Snug", postedDaysAgo: 6, views: 2_140_000, likes: 187_000, comments: 4_200, shares: 22_500, engagementRate: 9.9, featuredSku: "CV-LEG-HG-BLK", status: "viral" },
+  { id: "r2", caption: "5AM gym routine ft. the Wine Hyper Mesh bra", postedDaysAgo: 3, views: 640_000, likes: 51_000, comments: 980, shares: 6_100, engagementRate: 9.1, featuredSku: "CV-BRA-HM-WNE", status: "trending" },
+  { id: "r3", caption: "Pack with me: monsoon workout edit", postedDaysAgo: 9, views: 118_000, likes: 6_400, comments: 210, shares: 340, engagementRate: 6.0, featuredSku: "CV-JKT-SCP-BLK", status: "steady" },
+  { id: "r4", caption: "Pine Supima tee try-on haul", postedDaysAgo: 11, views: 42_000, likes: 1_100, comments: 38, shares: 22, engagementRate: 2.8, featuredSku: "CV-TEE-SU-PNE", status: "underperforming" },
+  { id: "r5", caption: "Tennis skort transition trend", postedDaysAgo: 2, views: 289_000, likes: 24_000, comments: 610, shares: 2_900, engagementRate: 9.5, featuredSku: "CV-SKT-SWL-BLK", status: "trending" },
+  { id: "r6", caption: "Auburn Seamless leggings on 5 skin tones", postedDaysAgo: 5, views: 510_000, likes: 46_000, comments: 890, shares: 5_200, engagementRate: 10.2, featuredSku: "CV-LEG-SC-AUB", status: "viral" },
 ];
 
 export interface AdCampaign {
@@ -68,13 +68,13 @@ export interface AdCampaign {
 }
 
 export const AD_CAMPAIGNS: AdCampaign[] = [
-  { name: "Sculpt Legging – Retargeting Q3", platform: "Meta", sku: "CV-LEG-SCLP-BLK", spend: 412_000, revenue: 2_180_000, roas: 5.29, roasChangePct: 12, ctr: 2.4, cpm: 210, status: "scaling" },
-  { name: "Electric Lime Bra – UGC Reel Boost", platform: "Meta", sku: "CV-BRA-PWR-ELC", spend: 265_000, revenue: 1_340_000, roas: 5.06, roasChangePct: 34, ctr: 3.1, cpm: 195, status: "scaling" },
-  { name: "Search – seamless leggings india", platform: "Google", sku: "CV-LEG-FLEX-NUD", spend: 198_000, revenue: 760_000, roas: 3.84, roasChangePct: 6, ctr: 4.8, cpm: 340, status: "healthy" },
-  { name: "Sage Tee – Prospecting", platform: "Meta", sku: "CV-TEE-OVR-SGE", spend: 154_000, revenue: 231_000, roas: 1.5, roasChangePct: -41, ctr: 0.9, cpm: 265, status: "paused-recommended" },
-  { name: "Berry Co-ord – Broad Prospecting", platform: "Meta", sku: "CV-SET-CORE-BRY", spend: 176_000, revenue: 264_000, roas: 1.5, roasChangePct: -29, ctr: 1.1, cpm: 250, status: "fatigued" },
-  { name: "Pinterest – Squat Proof Leggings", platform: "Pinterest", sku: "CV-LEG-SCLP-BLK", spend: 62_000, revenue: 228_000, roas: 3.68, roasChangePct: 19, ctr: 1.8, cpm: 140, status: "healthy" },
-  { name: "Windbreak Jacket – Launch Push", platform: "Meta", sku: "CV-JKT-WIND-NVY", spend: 220_000, revenue: 480_000, roas: 2.18, roasChangePct: -8, ctr: 1.6, cpm: 280, status: "fatigued" },
+  { name: "Hourglass Snug – Retargeting Q3", platform: "Meta", sku: "CV-LEG-HG-BLK", spend: 412_000, revenue: 2_180_000, roas: 5.29, roasChangePct: 12, ctr: 2.4, cpm: 210, status: "scaling" },
+  { name: "Hyper Mesh Bra – UGC Reel Boost", platform: "Meta", sku: "CV-BRA-HM-WNE", spend: 265_000, revenue: 1_340_000, roas: 5.06, roasChangePct: 34, ctr: 3.1, cpm: 195, status: "scaling" },
+  { name: "Search – seamless leggings india", platform: "Google", sku: "CV-LEG-SC-AUB", spend: 198_000, revenue: 760_000, roas: 3.84, roasChangePct: 6, ctr: 4.8, cpm: 340, status: "healthy" },
+  { name: "Pine Supima Tee – Prospecting", platform: "Meta", sku: "CV-TEE-SU-PNE", spend: 154_000, revenue: 231_000, roas: 1.5, roasChangePct: -41, ctr: 0.9, cpm: 265, status: "paused-recommended" },
+  { name: "Plie Skort – Broad Prospecting", platform: "Meta", sku: "CV-SKT-PLE-BLK", spend: 176_000, revenue: 264_000, roas: 1.5, roasChangePct: -29, ctr: 1.1, cpm: 250, status: "fatigued" },
+  { name: "Pinterest – Squat Proof Leggings", platform: "Pinterest", sku: "CV-LEG-HG-BLK", spend: 62_000, revenue: 228_000, roas: 3.68, roasChangePct: 19, ctr: 1.8, cpm: 140, status: "healthy" },
+  { name: "Sculptor Jacket – Launch Push", platform: "Meta", sku: "CV-JKT-SCP-BLK", spend: 220_000, revenue: 480_000, roas: 2.18, roasChangePct: -8, ctr: 1.6, cpm: 280, status: "fatigued" },
 ];
 
 export interface DealPerformance {
@@ -91,7 +91,7 @@ export const DEALS: DealPerformance[] = [
   { name: "Myntra End of Season Sale – Flat 30%", channel: "Myntra", discountPct: 30, weeksLive: 3, conversionTrend: [6.2, 7.0, 6.8], status: "performing" },
   { name: "Zepto 15-Min Flash Deal – Sports Bra", channel: "Zepto", discountPct: 15, weeksLive: 2, conversionTrend: [8.1, 8.6], status: "performing" },
   { name: "Amazon Great Freedom Festival Bundle", channel: "Amazon", discountPct: 25, weeksLive: 5, conversionTrend: [5.4, 5.9, 5.5, 4.6, 3.8], status: "decaying" },
-  { name: "Nykaa Fashion Co-ord Set Clearance", channel: "Nykaa Fashion", discountPct: 40, weeksLive: 8, conversionTrend: [3.2, 2.8, 2.1, 1.6, 1.2, 0.9, 0.7, 0.5], status: "dead" },
+  { name: "Nykaa Fashion Skort Clearance", channel: "Nykaa Fashion", discountPct: 40, weeksLive: 8, conversionTrend: [3.2, 2.8, 2.1, 1.6, 1.2, 0.9, 0.7, 0.5], status: "dead" },
 ];
 
 export interface Competitor {

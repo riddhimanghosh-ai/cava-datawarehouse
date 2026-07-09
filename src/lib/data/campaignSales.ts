@@ -66,7 +66,7 @@ export interface CampaignCoupon {
 export const CAMPAIGN_COUPONS: CampaignCoupon[] = [
   { code: "FESTIVE40", campaign: "Diwali Festive Sale — Flat 40%", uses: 3120, totalDiscount: 2140600, avgDiscount: 686, redemptionRatePct: 42.1 },
   { code: "BFCM", campaign: "Black Friday / Cyber Monday", uses: 2740, totalDiscount: 1880400, avgDiscount: 686, redemptionRatePct: 38.6 },
-  { code: "LIME15", campaign: "Electric Lime Collection Drop", uses: 1180, totalDiscount: 148500, avgDiscount: 126, redemptionRatePct: 19.4 },
+  { code: "MESH15", campaign: "Hyper Mesh Collection Drop", uses: 1180, totalDiscount: 148500, avgDiscount: 126, redemptionRatePct: 19.4 },
   { code: "COLLAB10", campaign: "Creator Collab — @fitwithananya", uses: 240, totalDiscount: 88000, avgDiscount: 366, redemptionRatePct: 6.1 },
   { code: "MONSOON20", campaign: "Monsoon Flash — 20% off Leggings", uses: 520, totalDiscount: 276000, avgDiscount: 531, redemptionRatePct: 24.8 },
   { code: "WINBACK15", campaign: "Winback Email — 'We miss you' 15%", uses: 190, totalDiscount: 29040, avgDiscount: 153, redemptionRatePct: 12.2 },

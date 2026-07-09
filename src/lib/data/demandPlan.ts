@@ -9,9 +9,9 @@ const MONTHLY_CAPACITY_BY_CATEGORY: Record<Category, number> = {
   Leggings: 6000,
   "Sports Bra": 5000,
   Joggers: 3500,
-  "Oversized Tee": 7000,
-  "Sports Set": 2500,
-  Shorts: 4000,
+  "T-Shirts": 7000,
+  "Skorts": 2500,
+  "Flare Pants": 4000,
   Jacket: 1200,
 };
 
@@ -55,18 +55,20 @@ function plannerAction(pct: number): PlannerAction {
 
 function buildPlanFor(product: Product): DemandPlanSku {
   const capacity = MONTHLY_CAPACITY_BY_CATEGORY[product.category];
-  const isHeroRunner = ["CV-LEG-SCLP-BLK", "CV-BRA-PWR-BLK", "CV-BRA-PWR-ELC", "CV-LEG-FLEX-NUD"].includes(product.sku);
-  const isOverbought = ["CV-TEE-OVR-SGE", "CV-SET-CORE-BRY", "CV-JOG-CLD-GRY"].includes(product.sku);
+  const isHeroRunner = ["CV-LEG-HG-BLK", "CV-BRA-CB-BLK", "CV-BRA-HM-WNE", "CV-LEG-SC-AUB"].includes(product.sku);
+  const isOverbought = ["CV-TEE-SU-PNE", "CV-SKT-PLE-BLK", "CV-JOG-EW-NVY"].includes(product.sku);
 
   const availableChannels = CHANNELS.filter((c) => AVAILABILITY[c].includes(product.sku));
   const weightSum = availableChannels.reduce((s, c) => s + CHANNEL_WEIGHT[c], 0);
 
-  let demandBase = isHeroRunner ? capacity * rng.range(0.95, 1.15) : isOverbought ? capacity * rng.range(0.15, 0.3) : capacity * rng.range(0.45, 0.85);
+  // Heroes run hot enough to breach monthly capacity as festive demand builds;
+  // overbought SKUs idle well below it.
+  let demandBase = isHeroRunner ? capacity * rng.range(1.1, 1.3) : isOverbought ? capacity * rng.range(0.15, 0.3) : capacity * rng.range(0.45, 0.85);
 
   const months: DemandPlanMonth[] = DEMAND_PLAN_MONTHS.map((month) => {
-    demandBase *= 1 + rng.range(-0.03, isHeroRunner ? 0.09 : 0.03);
+    demandBase *= 1 + rng.range(-0.02, isHeroRunner ? 0.12 : 0.03);
     const totalDemand = Math.round(demandBase);
-    const inStock = Math.round(totalDemand * rng.range(0.28, 0.48));
+    const inStock = Math.round(totalDemand * (isHeroRunner ? rng.range(0.14, 0.28) : rng.range(0.28, 0.48)));
     const needToProduce = Math.max(0, totalDemand - inStock);
     const pct = Math.round((needToProduce / capacity) * 100);
     const byChannel = {} as Record<Channel, number>;

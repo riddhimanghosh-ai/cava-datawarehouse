@@ -1,61 +1,98 @@
 "use client";
 
 import { useState } from "react";
-import { Crosshair, Layers, Store, Target } from "lucide-react";
-import { Card, CardHeader, StatCard, Badge, MultiSelect, passesFilter, FilterRow, IconTile, ProgressBar } from "@/components/ui";
+import { Layers, RefreshCw, Shirt, Store, Target } from "lucide-react";
+import { Card, MultiSelect, passesFilter, FilterRow } from "@/components/ui";
 import { formatINR, cx } from "@/lib/format";
 import { allStockouts, COMPETITOR_STORES } from "@/lib/data";
+
+const CATEGORY_GRADIENT: Record<string, string> = {
+  Leggings: "linear-gradient(135deg,#1f2937,#4b5563)",
+  "Sports Bra": "linear-gradient(135deg,#6d28d9,#a78bfa)",
+  Joggers: "linear-gradient(135deg,#334155,#64748b)",
+  "Co-ord Set": "linear-gradient(135deg,#9d174d,#f472b6)",
+  Tees: "linear-gradient(135deg,#065f46,#34d399)",
+  Shorts: "linear-gradient(135deg,#92400e,#fbbf24)",
+  Outerwear: "linear-gradient(135deg,#1e3a8a,#60a5fa)",
+};
 
 export default function StockoutSniperPage() {
   const [store, setStore] = useState<Set<string>>(new Set());
   const [category, setCategory] = useState<Set<string>>(new Set());
   const categories = Array.from(new Set(COMPETITOR_STORES.flatMap((s) => s.products.map((p) => p.category))));
+
   const stockouts = allStockouts()
     .filter((s) => passesFilter(store, s.store))
     .filter((s) => passesFilter(category, s.product.category));
-  const freshWindows = allStockouts().filter((s) => (s.product.outOfStockDays ?? 0) <= 5).length;
+
+  const productsWatched = COMPETITOR_STORES.reduce((n, s) => n + s.products.length, 0);
+  const storesWatched = store.size === 0 ? COMPETITOR_STORES.length : store.size;
+  const lastScan = Math.min(...COMPETITOR_STORES.map((s) => s.lastScannedDaysAgo));
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Competitor SKUs out of stock" value={`${allStockouts().length}`} tone="danger" />
-        <StatCard label="Fresh windows (≤5 days)" value={`${freshWindows}`} tone="ok" />
-        <StatCard label="Stores watched" value={`${COMPETITOR_STORES.length}`} />
-        <StatCard label="Avg days out" value={`${Math.round(allStockouts().reduce((s, r) => s + (r.product.outOfStockDays ?? 0), 0) / allStockouts().length)}d`} />
+      <FilterRow>
+        <MultiSelect label="Store" icon={<Store size={12} />} selected={store} onChange={setStore} options={COMPETITOR_STORES.map((s) => ({ value: s.name, label: s.name }))} />
+        <MultiSelect label="Category" icon={<Layers size={12} />} selected={category} onChange={setCategory} options={categories.map((c) => ({ value: c, label: c }))} />
+      </FilterRow>
+
+      {/* Meta row */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-sm text-[var(--muted)]">
+          <span className="text-[var(--foreground)] font-semibold">{productsWatched}</span> products watched across{" "}
+          <span className="text-[var(--foreground)] font-semibold">{storesWatched}</span> store{storesWatched > 1 ? "s" : ""}
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-[var(--muted)]">Last scan {lastScan}d ago</span>
+          <button className="flex items-center gap-1.5 rounded-lg bg-[var(--accent)] text-black font-medium px-3.5 py-2 text-sm">
+            <RefreshCw size={13} /> Scan all stores
+          </button>
+        </div>
       </div>
 
       <Card>
-        <FilterRow>
-          <MultiSelect label="Store" icon={<Store size={12} />} selected={store} onChange={setStore} options={COMPETITOR_STORES.map((s) => ({ value: s.name, label: s.name }))} />
-          <MultiSelect label="Category" icon={<Layers size={12} />} selected={category} onChange={setCategory} options={categories.map((c) => ({ value: c, label: c }))} />
-        </FilterRow>
-        <CardHeader title="Stockout Sniper" subtitle="When a competitor's product runs dry, their demand has nowhere to go but you — run a comparison ad against these while the window is open" />
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        <div className="flex items-center gap-2 mb-1">
+          <Target size={16} className="text-[var(--accent)]" />
+          <h3 className="text-base font-semibold">{stockouts.length} Competitor Stockouts — Open Windows</h3>
+        </div>
+        <p className="text-[11px] uppercase tracking-wider text-[var(--muted)] font-medium mb-4">
+          Their demand has nowhere to go. Aim your ads at these products now.
+        </p>
+
+        <div className="space-y-2.5">
           {stockouts.map((s) => {
             const days = s.product.outOfStockDays ?? 0;
             const fresh = days <= 5;
             return (
-              <div key={s.product.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
-                <div className="flex items-start gap-3 mb-2">
-                  <IconTile icon={<Crosshair size={15} />} tone={fresh ? "ok" : "danger"} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium leading-tight">{s.product.title}</div>
-                    <div className="text-[11px] text-[var(--muted)]">{s.store} · {s.product.category}</div>
+              <div
+                key={s.product.id}
+                className="flex items-center gap-4 rounded-xl border border-[var(--warning)]/25 bg-[var(--warning)]/[0.06] px-4 py-3"
+              >
+                <div
+                  className="h-12 w-12 rounded-lg shrink-0 flex items-center justify-center text-white/70"
+                  style={{ background: CATEGORY_GRADIENT[s.product.category] ?? "linear-gradient(135deg,#334155,#64748b)" }}
+                >
+                  <Shirt size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold leading-tight truncate">{s.product.title}</div>
+                  <div className="text-[12px] mt-0.5">
+                    <span className="text-[var(--warning)] font-medium">{s.store}</span>
+                    <span className="text-[var(--muted)]"> · currently out of stock</span>
+                    <span className="text-[var(--muted)]"> · {days}d</span>
+                    {fresh && <span className="text-[var(--ok)] font-medium"> · fresh window</span>}
                   </div>
-                  <Badge tone={fresh ? "positive" : "stockout"}>{fresh ? "fresh window" : "aging"}</Badge>
                 </div>
-                <div className="flex items-center justify-between text-xs text-[var(--muted)] mb-1">
-                  <span>Out {days}d · last listed at {formatINR(s.product.price)}</span>
-                </div>
-                <ProgressBar pct={Math.min(100, (days / 21) * 100)} tone={fresh ? "ok" : "danger"} />
-                <div className={cx("flex items-center gap-1 text-[11px] mt-2", fresh ? "text-[var(--ok)]" : "text-[var(--muted)]")}>
-                  <Target size={11} />
-                  {fresh ? "Launch a comparison ad now — window still open" : "Window aging — competitor may restock soon"}
+                <div className="text-right shrink-0">
+                  <div className="text-base font-bold">{formatINR(s.product.price)}</div>
+                  <div className="text-[10px] uppercase tracking-wider font-semibold text-[var(--warning)]">Sold Out</div>
                 </div>
               </div>
             );
           })}
-          {stockouts.length === 0 && <p className="text-sm text-[var(--muted)] py-6 text-center col-span-full">No competitor stockouts on this filter.</p>}
+          {stockouts.length === 0 && (
+            <p className="text-sm text-[var(--muted)] py-6 text-center">No competitor stockouts on this filter.</p>
+          )}
         </div>
       </Card>
     </div>

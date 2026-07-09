@@ -194,7 +194,7 @@ function MetaAds() {
 }
 
 function GoogleAds() {
-  const maxRev = Math.max(...GOOGLE_ADS_CAMPAIGNS.map((c) => c.revenue));
+  const maxSpend = Math.max(...GOOGLE_ADS_CAMPAIGNS.map((c) => c.spend));
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-x-8 gap-y-6">
@@ -204,45 +204,57 @@ function GoogleAds() {
       </div>
 
       <Card>
-        <CardHeader title="Campaign performance" subtitle="Search, Shopping, PMax & Display — spend vs. return" />
+        <CardHeader title="Spend by campaign" subtitle="Daily Google Ads spend concentrated in the top PMax & Brand-Search campaigns" />
+        <div className="space-y-3">
+          {[...GOOGLE_ADS_CAMPAIGNS].sort((a, b) => b.spend - a.spend).map((c) => (
+            <LabelledBar
+              key={c.campaign}
+              label={c.campaign}
+              value={`${formatINR(c.spend, true)} · ${c.roas.toFixed(2)}x`}
+              pct={(c.spend / maxSpend) * 100}
+              tone={c.roas >= 1.5 ? "ok" : c.roas >= 1 ? "warning" : "danger"}
+            />
+          ))}
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader title="Campaign performance" subtitle="Status, spend, funnel & return by campaign" />
         <div className="overflow-x-auto -mx-5">
-          <table className="w-full text-sm min-w-[820px]">
+          <table className="w-full text-sm min-w-[920px]">
             <thead>
               <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
                 <th className="py-2 px-5 font-medium">Campaign</th>
-                <th className="py-2 px-2 font-medium">Type</th>
+                <th className="py-2 px-2 font-medium">Status</th>
                 <th className="py-2 px-2 font-medium text-right">Spend</th>
+                <th className="py-2 px-2 font-medium text-right">Impr.</th>
                 <th className="py-2 px-2 font-medium text-right">Clicks</th>
                 <th className="py-2 px-2 font-medium text-right">CTR</th>
+                <th className="py-2 px-2 font-medium text-right">Avg CPC</th>
                 <th className="py-2 px-2 font-medium text-right">Conv.</th>
-                <th className="py-2 px-2 font-medium text-right">Revenue</th>
                 <th className="py-2 px-2 font-medium text-right">ROAS</th>
               </tr>
             </thead>
             <tbody>
               {GOOGLE_ADS_CAMPAIGNS.map((c) => (
                 <tr key={c.campaign} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
-                  <td className="py-2.5 px-5 font-medium">{c.campaign}</td>
-                  <td className="py-2.5 px-2 text-[var(--muted)]">{c.type}</td>
+                  <td className="py-2.5 px-5 font-medium whitespace-nowrap">{c.campaign}</td>
+                  <td className="py-2.5 px-2">
+                    <span className={cx("inline-flex items-center border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide", c.status === "ENABLED" ? "text-[var(--ok)] border-[var(--ok)]/35 bg-[var(--ok)]/8" : "text-[var(--muted)] border-[var(--border)] bg-[var(--surface-2)]")}>
+                      {c.status.toLowerCase()}
+                    </span>
+                  </td>
                   <td className="py-2.5 px-2 text-right">{formatINR(c.spend, true)}</td>
+                  <td className="py-2.5 px-2 text-right text-[var(--muted)]">{formatNumber(c.impressions)}</td>
                   <td className="py-2.5 px-2 text-right">{formatNumber(c.clicks)}</td>
                   <td className="py-2.5 px-2 text-right">{c.ctr}%</td>
-                  <td className="py-2.5 px-2 text-right">{formatNumber(c.conversions)}</td>
-                  <td className="py-2.5 px-2 text-right">{formatINR(c.revenue, true)}</td>
-                  <td className="py-2.5 px-2 text-right font-medium text-[var(--ok)]">{c.roas.toFixed(2)}x</td>
+                  <td className="py-2.5 px-2 text-right">{formatINR(c.avgCpc)}</td>
+                  <td className="py-2.5 px-2 text-right">{c.conversions.toFixed(1)}</td>
+                  <td className={cx("py-2.5 px-2 text-right font-medium", c.roas >= 1 ? "text-[var(--ok)]" : "text-[var(--danger)]")}>{c.roas.toFixed(2)}x</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      </Card>
-
-      <Card>
-        <CardHeader title="Revenue by campaign" subtitle="Where Google spend returns most" />
-        <div className="space-y-3">
-          {[...GOOGLE_ADS_CAMPAIGNS].sort((a, b) => b.revenue - a.revenue).map((c) => (
-            <LabelledBar key={c.campaign} label={c.campaign} value={formatINR(c.revenue, true)} pct={(c.revenue / maxRev) * 100} tone="ok" />
-          ))}
         </div>
       </Card>
     </div>

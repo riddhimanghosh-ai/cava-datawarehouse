@@ -50,6 +50,8 @@ export const GROUPS = [
       { href: "/marketing/price-tracker", label: "Competitor Price Tracker" },
       { href: "/marketing/new-launches", label: "New Launch Detector" },
       { href: "/marketing/stockout-sniper", label: "Stockout Sniper" },
+      { href: "/marketing/search-gap", label: "Search Gap Miner" },
+      { href: "/marketing/code-quality", label: "Discount Code Quality" },
     ],
   },
 ];

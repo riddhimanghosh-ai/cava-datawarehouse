@@ -128,29 +128,43 @@ export const META_CAMPAIGNS: MetaCampaignRow[] = [
 // --- Google Ads (second tab) ------------------------------------------------
 
 export const GOOGLE_ADS_KPIS: ShopifyKpi[] = [
-  { label: "Total Spend", value: "₹61.0K", caption: "last 30 days" },
-  { label: "Conv. Value / Cost", value: "3.84x", caption: "ROAS", tone: "ok" },
-  { label: "Conversions", value: "402", caption: "₹152 / conv" },
-  { label: "Clicks", value: "9.1K", caption: "₹6.7 / click" },
-  { label: "Impressions", value: "412K", caption: "CTR 2.2%" },
-  { label: "Avg CPC", value: "₹6.70", caption: "search + shopping" },
+  { label: "Total Spend", value: "₹5.54L", caption: "last 30 days" },
+  { label: "ROAS", value: "0.88x", caption: "below target", tone: "danger" },
+  { label: "Clicks", value: "35.8K", caption: "CTR 1.17%" },
+  { label: "Conversions", value: "393", caption: "value ₹4.87L" },
+  { label: "Impressions", value: "3.0M", caption: "avg CPC ₹15" },
+  { label: "Cost / Conversion", value: "₹1,411", caption: "CPA", tone: "danger" },
 ];
+
+export const GOOGLE_ADS_TOTALS = {
+  spend: 554136,
+  conversions: 393,
+  conversionValue: 487150,
+};
 
 export interface GoogleAdsCampaignRow {
   campaign: string;
-  type: string;
+  status: "ENABLED" | "PAUSED";
   spend: number;
+  impressions: number;
   clicks: number;
   ctr: number;
+  avgCpc: number;
   conversions: number;
-  revenue: number;
   roas: number;
 }
 
 export const GOOGLE_ADS_CAMPAIGNS: GoogleAdsCampaignRow[] = [
-  { campaign: "Search — Brand", type: "Search", spend: 8200, clicks: 2100, ctr: 6.4, conversions: 148, revenue: 296000, roas: 36.1 },
-  { campaign: "Search — Seamless Leggings", type: "Search", spend: 19800, clicks: 3400, ctr: 4.8, conversions: 96, revenue: 178000, roas: 8.99 },
-  { campaign: "PMax — Full Catalogue", type: "Performance Max", spend: 18400, clicks: 2200, ctr: 1.9, conversions: 92, revenue: 142000, roas: 7.72 },
-  { campaign: "Shopping — Sports Bra", type: "Shopping", spend: 9600, clicks: 980, ctr: 1.4, conversions: 44, revenue: 74000, roas: 7.71 },
-  { campaign: "Display — Retargeting", type: "Display", spend: 5000, clicks: 420, ctr: 0.7, conversions: 22, revenue: 39000, roas: 7.8 },
+  { campaign: "NK - Pmax - Full Funnel - 09/05", status: "ENABLED", spend: 151257, impressions: 492700, clicks: 7700, ctr: 1.56, avgCpc: 20, conversions: 97.0, roas: 0.83 },
+  { campaign: "NK_Brand-Search_08/05", status: "ENABLED", spend: 95105, impressions: 14100, clicks: 3800, ctr: 26.69, avgCpc: 25, conversions: 117.8, roas: 1.65 },
+  { campaign: "NK_Pmax_Shopping_Brand_All_Products", status: "PAUSED", spend: 88179, impressions: 614200, clicks: 5500, ctr: 0.9, avgCpc: 16, conversions: 61.7, roas: 0.79 },
+  { campaign: "NK_Pmax_Shopping_NB_All_Products", status: "ENABLED", spend: 69416, impressions: 853900, clicks: 9200, ctr: 1.07, avgCpc: 8, conversions: 43.6, roas: 0.79 },
+  { campaign: "NK - Dem Gen - Open Targeting - 18/05", status: "ENABLED", spend: 37890, impressions: 373000, clicks: 2800, ctr: 0.76, avgCpc: 13, conversions: 15.0, roas: 0.53 },
+  { campaign: "OW-Pmax-Bestsellers", status: "PAUSED", spend: 28660, impressions: 185200, clicks: 1800, ctr: 0.99, avgCpc: 16, conversions: 23.4, roas: 0.86 },
+  { campaign: "OW-DemandGen-Prospect", status: "PAUSED", spend: 23942, impressions: 227600, clicks: 1400, ctr: 0.64, avgCpc: 17, conversions: 2.3, roas: 0.12 },
+  { campaign: "OW-PMax_AllProducts_Brand_Asset", status: "PAUSED", spend: 21250, impressions: 141800, clicks: 1300, ctr: 0.93, avgCpc: 16, conversions: 9.5, roas: 0.4 },
+  { campaign: "OW-DemandGen-Engaged", status: "PAUSED", spend: 16015, impressions: 120800, clicks: 1100, ctr: 0.88, avgCpc: 15, conversions: 5.6, roas: 0.29 },
+  { campaign: "OW-Brand-Search_Brand&Product", status: "PAUSED", spend: 11040, impressions: 1500, clicks: 261, ctr: 17.3, avgCpc: 42, conversions: 2.0, roas: 0.26 },
+  { campaign: "OW-Brand-Search_PureBrand", status: "PAUSED", spend: 9274, impressions: 7800, clicks: 729, ctr: 9.36, avgCpc: 13, conversions: 13.0, roas: 1.61 },
+  { campaign: "NK - Dem Gen - Statics - BOGO Open T.", status: "PAUSED", spend: 2107, impressions: 12400, clicks: 143, ctr: 1.16, avgCpc: 15, conversions: 2.0, roas: 1.23 },
 ];

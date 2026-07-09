@@ -17,3 +17,5 @@ export * from "./assistant";
 export * from "./cityLevelSales";
 export * from "./campaignSales";
 export * from "./metaAds";
+export * from "./searchGap";
+export * from "./codeQuality";

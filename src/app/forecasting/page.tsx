@@ -1,10 +1,20 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, Boxes, ChevronDown, ChevronRight, ClipboardList, Factory, Layers, Table } from "lucide-react";
-import { Card, CardHeader, StatCard, Tabs, FilterBox, FilterRow, MultiSelect, passesFilter } from "@/components/ui";
-import { formatNumber, cx } from "@/lib/format";
-import { CHANNELS, Channel, DEMAND_PLANS, DEMAND_PLAN_MONTHS, PRODUCTS } from "@/lib/data";
+import { AlertTriangle, Boxes, ChevronDown, ChevronRight, ClipboardList, Layers, MapPin, Megaphone, Store, Table, TrendingUp } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, Tabs, FilterBox, FilterRow, MultiSelect, passesFilter } from "@/components/ui";
+import { formatINR, formatNumber, cx } from "@/lib/format";
+import {
+  CHANNELS,
+  Channel,
+  DEMAND_PLANS,
+  DEMAND_PLAN_MONTHS,
+  PRODUCTS,
+  understockedWinners,
+  channelWhiteSpace,
+  marketingStockAlignment,
+  geoPockets,
+} from "@/lib/data";
 
 const HORIZONS = [
   { value: "3", label: "3 months forecast" },
@@ -74,10 +84,17 @@ export default function ForecastingPage() {
   const overCapacityCount = selectedPlans.reduce((s, p) => s + p.months.slice(0, Number(horizon)).filter((m) => m.action.tone === "danger").length, 0);
   const totalCapacity = selectedPlans.reduce((s, p) => s + p.monthlyCapacity, 0);
 
-  // Every at/over-capacity SKU-month in the horizon, worst first.
-  const actionItems = selectedPlans
-    .flatMap((p) => p.months.slice(0, Number(horizon)).filter((m) => m.action.tone !== "ok").map((m) => ({ plan: p, m })))
-    .sort((a, b) => b.m.action.pct - a.m.action.pct);
+  // Four opportunity lenses; category/SKU filters apply where they make sense
+  // (geo pockets are city-level, so they ignore SKU filters).
+  const skuPass = (sku: string) => {
+    const p = PRODUCTS.find((pp) => pp.sku === sku);
+    return !!p && passesFilter(skus, p.sku) && passesFilter(categoryFilter, p.category);
+  };
+  const winners = understockedWinners().filter((w) => skuPass(w.sku));
+  const whiteSpace = channelWhiteSpace().filter((w) => skuPass(w.sku));
+  const alignment = marketingStockAlignment().filter((a) => skuPass(a.sku));
+  const pockets = geoPockets();
+  const actionCount = winners.length + whiteSpace.length + alignment.length + pockets.length;
 
   return (
     <div>
@@ -87,7 +104,7 @@ export default function ForecastingPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
         <StatCard label="SKUs in view" value={`${selectedPlans.length} of ${DEMAND_PLANS.length}`} />
         <StatCard label="Channels selected" value={`${selectedChannels.length} of ${CHANNELS.length}`} />
-        <StatCard label="Actions pending" value={`${actionItems.length}`} tone={actionItems.length > 0 ? "danger" : "ok"} caption={`${overCapacityCount} over capacity`} />
+        <StatCard label="Actions pending" value={`${actionCount}`} tone={actionCount > 0 ? "danger" : "ok"} caption={`${overCapacityCount} over capacity · 4 lenses`} />
         <StatCard label="Combined monthly capacity" value={`${formatNumber(totalCapacity)} units`} />
       </div>
 
@@ -162,35 +179,28 @@ export default function ForecastingPage() {
       <>
       <Card>
         <CardHeader
-          title="Planner Actions"
-          subtitle={`What needs to be done across the next ${horizon} months — every SKU-month at or over production capacity, worst first`}
+          title="Understocked winners"
+          subtitle="High sell-through with thin cover — demand you're physically losing. Restock these before anything else."
         />
-        {actionItems.length === 0 ? (
-          <p className="text-sm text-[var(--muted)] py-6 text-center">Nothing to action — all SKU-months are within capacity on this filter.</p>
+        {winners.length === 0 ? (
+          <p className="text-sm text-[var(--muted)] py-6 text-center">No understocked winners on this filter.</p>
         ) : (
           <div className="space-y-2.5">
-            {actionItems.map(({ plan, m }) => (
-              <div
-                key={`${plan.sku}-${m.month}`}
-                className={cx(
-                  "flex flex-wrap items-center gap-4 border px-4 py-3",
-                  m.action.tone === "danger" ? "border-[var(--danger)]/30 bg-[var(--danger)]/[0.04]" : "border-[var(--warning)]/30 bg-[var(--warning)]/[0.04]"
-                )}
-              >
-                <div className={cx("h-9 w-9 border flex items-center justify-center shrink-0", m.action.tone === "danger" ? "border-[var(--danger)]/40 text-[var(--danger)]" : "border-[var(--warning)]/40 text-[var(--warning)]")}>
-                  <AlertTriangle size={15} strokeWidth={1.5} />
+            {winners.map((w) => (
+              <div key={`${w.sku}-${w.channel}`} className="flex flex-wrap items-center gap-4 border border-[var(--danger)]/30 bg-[var(--danger)]/[0.04] px-4 py-3">
+                <div className="h-9 w-9 border border-[var(--danger)]/40 text-[var(--danger)] flex items-center justify-center shrink-0">
+                  <TrendingUp size={15} strokeWidth={1.5} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium">
-                    {m.month} — {plan.name}
-                  </div>
+                  <div className="text-sm font-medium">{w.name} · {w.channel}</div>
                   <div className="text-[11px] text-[var(--muted)] mt-0.5">
-                    Need to produce {formatNumber(m.needToProduce)} vs {formatNumber(plan.monthlyCapacity)}/mo capacity · demand {formatNumber(m.totalDemand)} · in stock {formatNumber(m.inStock)}
+                    {w.daysOfCover}d cover · {w.sellThroughPct}% sell-through
+                    {w.capacityNote ? ` · ${w.capacityNote}` : ""}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className={cx("text-sm font-semibold tnum", m.action.tone === "danger" ? "text-[var(--danger)]" : "text-[var(--warning)]")}>{m.action.pct}% of capacity</div>
-                  <div className="text-[11px] text-[var(--muted)] max-w-[320px]">{m.action.label.replace(/^[^—]*— /, "")}</div>
+                  <div className="text-sm font-semibold tnum text-[var(--danger)]">Order {formatNumber(w.suggestedQty)} units</div>
+                  <div className="text-[11px] text-[var(--muted)]">est. cost {formatINR(w.estCost, true)}</div>
                 </div>
               </div>
             ))}
@@ -199,46 +209,90 @@ export default function ForecastingPage() {
       </Card>
 
       <Card>
-        <CardHeader title="Capacity outlook — all SKUs" subtitle="Where production is tight across the next few months" />
-        <div className="overflow-x-auto -mx-5">
-          <table className="w-full text-sm min-w-[720px]">
-            <thead>
-              <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
-                <th className="py-2 px-5 font-medium">SKU</th>
-                <th className="py-2 px-2 font-medium">Tightest month</th>
-                <th className="py-2 px-2 font-medium text-right">Monthly capacity</th>
-                <th className="py-2 px-2 font-medium text-right">Peak load</th>
-                <th className="py-2 px-2 font-medium">Recommended action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {DEMAND_PLANS.filter((p) => p.months.some((m) => m.action.tone !== "ok"))
-                .sort((a, b) => Math.max(...b.months.map((m) => m.action.pct)) - Math.max(...a.months.map((m) => m.action.pct)))
-                .map((p) => {
-                  const worst = p.months.reduce((max, m) => (m.action.pct > max.action.pct ? m : max), p.months[0]);
-                  return (
-                    <tr key={p.sku} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
-                      <td className="py-2.5 px-5">
-                        <span className="flex items-center gap-2">
-                          <span className={cx("h-7 w-7 rounded-lg flex items-center justify-center shrink-0", worst.action.tone === "danger" ? "bg-[var(--danger)]/10 text-[var(--danger)]" : "bg-[var(--warning)]/10 text-[var(--warning)]")}>
-                            <Factory size={14} />
-                          </span>
-                          <span className="font-medium">{p.name}</span>
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-2 text-[var(--muted)]">{worst.month}</td>
-                      <td className="py-2.5 px-2 text-right">{formatNumber(p.monthlyCapacity)}/mo</td>
-                      <td className={cx("py-2.5 px-2 text-right font-medium", worst.action.tone === "danger" ? "text-[var(--danger)]" : "text-[var(--warning)]")}>{worst.action.pct}%</td>
-                      <td className="py-2.5 px-2">
-                        <span className={cx("inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium", ACTION_TONE_CLASSES[worst.action.tone])}>
-                          {worst.action.label}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </table>
+        <CardHeader
+          title="Channel white space"
+          subtitle="SKUs earning on their listed channels but absent from others — listing them is the cheapest growth available."
+        />
+        {whiteSpace.length === 0 ? (
+          <p className="text-sm text-[var(--muted)] py-6 text-center">No unlisted channel gaps on this filter.</p>
+        ) : (
+          <div className="space-y-2.5">
+            {whiteSpace.map((w) => (
+              <div key={w.sku} className="flex flex-wrap items-center gap-4 border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+                <div className="h-9 w-9 border border-[var(--accent)]/50 text-[var(--accent)] flex items-center justify-center shrink-0">
+                  <Store size={15} strokeWidth={1.5} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium">{w.name}</div>
+                  <div className="text-[11px] text-[var(--muted)] mt-0.5">
+                    Not listed on {w.missingChannels.join(" & ")} · earning {formatINR(w.monthlyRevenuePerListedChannel, true)}/mo per listed channel
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-sm font-semibold tnum text-[var(--accent)]">+{formatINR(w.estMonthlyUpside, true)}/mo</div>
+                  <div className="text-[11px] text-[var(--muted)]">est. upside if listed</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="Marketing ↔ stock alignment"
+          subtitle="Don't scale ads into a stockout; don't let spend idle on overstock."
+        />
+        {alignment.length === 0 ? (
+          <p className="text-sm text-[var(--muted)] py-6 text-center">Ad spend and stock are aligned on this filter.</p>
+        ) : (
+          <div className="space-y-2.5">
+            {alignment.map((a) => (
+              <div key={a.campaign} className={cx("flex flex-wrap items-center gap-4 border px-4 py-3", a.kind === "restock-before-scaling" ? "border-[var(--warning)]/30 bg-[var(--warning)]/[0.04]" : "border-[var(--border)] bg-[var(--surface-2)]")}>
+                <div className={cx("h-9 w-9 border flex items-center justify-center shrink-0", a.kind === "restock-before-scaling" ? "border-[var(--warning)]/40 text-[var(--warning)]" : "border-[var(--ink)] text-[var(--foreground)]")}>
+                  <Megaphone size={15} strokeWidth={1.5} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium">{a.campaign}</span>
+                    <Badge tone={a.kind === "restock-before-scaling" ? "delayed" : "neutral"}>
+                      {a.kind === "restock-before-scaling" ? "restock first" : "shift spend"}
+                    </Badge>
+                  </div>
+                  <div className="text-[11px] text-[var(--muted)] mt-0.5 max-w-3xl">{a.detail}</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className={cx("text-sm font-semibold tnum", a.roas >= 1 ? "text-[var(--ok)]" : "text-[var(--danger)]")}>{a.roas.toFixed(2)}x ROAS</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="Geo pockets"
+          subtitle="Cities punching above their weight on value but below it on volume — and COD-heavy cities to nudge prepaid."
+        />
+        <div className="space-y-2.5">
+          {pockets.map((g) => (
+            <div key={g.city} className="flex flex-wrap items-center gap-4 border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3">
+              <div className="h-9 w-9 border border-[var(--ink)] flex items-center justify-center shrink-0">
+                <MapPin size={15} strokeWidth={1.5} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-medium">{g.city}, {g.state}</span>
+                  <Badge tone={g.kind === "underweight-city" ? "improving" : "delayed"}>
+                    {g.kind === "underweight-city" ? "underweight city" : "COD heavy"}
+                  </Badge>
+                </div>
+                <div className="text-[11px] text-[var(--muted)] mt-0.5 max-w-3xl">{g.detail}</div>
+              </div>
+              <div className="text-right shrink-0 text-sm font-medium tnum">{g.metric}</div>
+            </div>
+          ))}
         </div>
       </Card>
       </>

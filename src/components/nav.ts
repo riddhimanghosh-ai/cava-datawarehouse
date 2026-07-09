@@ -20,6 +20,7 @@ export const GROUPS = [
     items: [
       { href: "/sales/primary-secondary", label: "Primary & Secondary Sales" },
       { href: "/sales/daily-report", label: "Daily Sales Report" },
+      { href: "/sales/city-report", label: "City-Level Sales Report" },
     ],
   },
   {

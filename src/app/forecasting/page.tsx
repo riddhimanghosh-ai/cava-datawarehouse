@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, Boxes, ChevronDown, ChevronRight, ClipboardList, Layers, MapPin, Megaphone, Store, Table, TrendingUp } from "lucide-react";
+import { AlertTriangle, Boxes, ChevronDown, ChevronRight, ClipboardList, Info, Layers, MapPin, Megaphone, Store, Table, TrendingUp } from "lucide-react";
 import { Card, CardHeader, StatCard, Badge, Tabs, FilterBox, FilterRow, MultiSelect, passesFilter } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
 import {
@@ -180,9 +180,12 @@ export default function ForecastingPage() {
 
       {tab === "winners" && (
       <Card>
-        <CardHeader
+        <LensHeader
           title="Understocked winners"
           subtitle="High sell-through with thin cover — demand you're physically losing. Restock these before anything else."
+          what="SKUs that shoppers keep buying (70%+ sell-through) but that have fewer than 12 days of stock left on a channel. Every day they stay thin, you lose sales you had already won."
+          how="For every SKU on every channel we take its sell-through % and days of cover from inventory. If the demand plan also shows the SKU breaching production capacity in a coming month, that warning is attached to the same row."
+          example="Black Cross Back Sports Bra on Nykaa Fashion sells through 91% of what's stocked and has only 2.5 days of cover left. Action: order ~117 units (a month of sales, ~₹47K) now — and since the same bra runs at 126% of production capacity in Nov'26, pre-build that batch in October."
         />
         {winners.length === 0 ? (
           <p className="text-sm text-[var(--muted)] py-6 text-center">No understocked winners on this filter.</p>
@@ -213,9 +216,12 @@ export default function ForecastingPage() {
 
       {tab === "whitespace" && (
       <Card>
-        <CardHeader
+        <LensHeader
           title="Channel white space"
           subtitle="SKUs earning on their listed channels but absent from others — listing them is the cheapest growth available."
+          what="Products already proving themselves on the channels where they're listed, but missing entirely from other channels. No new product, no new ad spend — just a listing you haven't created yet."
+          how="For each SKU we compute its monthly revenue per listed channel, then assume a new listing ramps to about 55% of that. Multiplied by the number of missing channels, that's the estimated monthly upside."
+          example="The Black Sculptor Jacket sells on Shopify and Myntra but isn't listed on Amazon — if it earns ₹40K/month per listed channel, an Amazon listing is worth roughly ₹22K/month once it ramps. Same logic flags the joggers missing from Nykaa Fashion."
         />
         {whiteSpace.length === 0 ? (
           <p className="text-sm text-[var(--muted)] py-6 text-center">No unlisted channel gaps on this filter.</p>
@@ -245,9 +251,12 @@ export default function ForecastingPage() {
 
       {tab === "alignment" && (
       <Card>
-        <CardHeader
+        <LensHeader
           title="Marketing ↔ stock alignment"
           subtitle="Don't scale ads into a stockout; don't let spend idle on overstock."
+          what="Two expensive mismatches between the ads team and the warehouse: scaling a winning ad on a SKU that's about to stock out (the spend converts into out-of-stock pages), and burning budget on a SKU that already has months of unsold stock."
+          how="Every ad campaign is joined to its SKU's stock cover. ROAS ≥ 3x with under 12 days of cover → 'restock first'. ROAS under 2x on a SKU with 60+ days of cover → 'shift spend' to the best-performing scaler and clear the stock with a bundle instead."
+          example="Hourglass Snug retargeting returns 5.29x, but the legging has just 2.5 days of cover on its thinnest channel — land the restock before adding budget. Meanwhile Plie Skort prospecting returns 1.5x while ~112 days of skort stock sits idle — move that budget to the Hyper Mesh Bra UGC campaign (5.06x)."
         />
         {alignment.length === 0 ? (
           <p className="text-sm text-[var(--muted)] py-6 text-center">Ad spend and stock are aligned on this filter.</p>
@@ -279,9 +288,12 @@ export default function ForecastingPage() {
 
       {tab === "geo" && (
       <Card>
-        <CardHeader
+        <LensHeader
           title="Geo pockets"
           subtitle="Cities punching above their weight on value but below it on volume — and COD-heavy cities to nudge prepaid."
+          what="Two kinds of city-level opportunity: 'underweight cities' where the average order value is higher than your company average but the share of orders is low (rich demand you're not mining), and COD-heavy cities where cash-on-delivery eats margin and drives returns."
+          how="From the city-level sales report: a city is underweight when its AOV beats the company average by 5%+ while its order share is under ~85% of an even split. It's COD-heavy when more than 55% of its orders are cash on delivery."
+          example="Gurugram buyers spend well above the average order value but the city contributes only a sliver of orders — worth geo-targeted ad spend and a delivery-promise check. Lucknow runs over 55% COD — a ₹50–75 prepaid discount nudge protects margin and cuts RTO risk."
         />
         <div className="space-y-2.5">
           {pockets.map((g) => (
@@ -374,6 +386,62 @@ function MonthRows({
             </td>
           </tr>
         ))}
+    </>
+  );
+}
+
+// Card header with an info toggle that expands a plain-English explanation of
+// the lens: what it shows, how it's computed, and a worked example.
+function LensHeader({
+  title,
+  subtitle,
+  what,
+  how,
+  example,
+}: {
+  title: string;
+  subtitle: string;
+  what: string;
+  how: string;
+  example: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="flex items-start gap-2">
+          <div>
+            <h3 className="text-[15px] font-medium tracking-tight text-[var(--foreground)]">{title}</h3>
+            <p className="text-xs text-[var(--muted)] mt-1 leading-relaxed max-w-2xl">{subtitle}</p>
+          </div>
+          <button
+            onClick={() => setOpen((o) => !o)}
+            aria-label={`About ${title}`}
+            className={cx(
+              "border p-1 mt-0.5 transition-colors shrink-0",
+              open ? "border-[var(--accent)] text-[var(--accent)]" : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
+            )}
+          >
+            <Info size={13} strokeWidth={1.75} />
+          </button>
+        </div>
+      </div>
+      {open && (
+        <div className="mb-4 border border-[var(--border)] bg-[var(--surface-2)] p-4 space-y-3">
+          <div>
+            <div className="eyebrow mb-1">What it shows</div>
+            <p className="text-[13px] text-[var(--ink-2)] leading-relaxed max-w-3xl">{what}</p>
+          </div>
+          <div>
+            <div className="eyebrow mb-1">How it&apos;s computed</div>
+            <p className="text-[13px] text-[var(--ink-2)] leading-relaxed max-w-3xl">{how}</p>
+          </div>
+          <div className="border-l-2 border-[var(--accent)] pl-3">
+            <div className="eyebrow mb-1">Example</div>
+            <p className="text-[13px] text-[var(--ink-2)] leading-relaxed max-w-3xl">{example}</p>
+          </div>
+        </div>
+      )}
     </>
   );
 }

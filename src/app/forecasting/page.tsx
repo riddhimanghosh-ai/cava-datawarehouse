@@ -152,27 +152,45 @@ export default function ForecastingPage() {
 
       <Card>
         <CardHeader title="Capacity outlook — all SKUs" subtitle="Where production is tight across the next few months" />
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {DEMAND_PLANS.filter((p) => p.months.some((m) => m.action.tone !== "ok"))
-            .sort((a, b) => Math.max(...b.months.map((m) => m.action.pct)) - Math.max(...a.months.map((m) => m.action.pct)))
-            .slice(0, 6)
-            .map((p) => {
-              const worst = p.months.reduce((max, m) => (m.action.pct > max.action.pct ? m : max), p.months[0]);
-              return (
-                <div key={p.sku} className="flex gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
-                  <div className={cx("h-9 w-9 rounded-xl flex items-center justify-center shrink-0", worst.action.tone === "danger" ? "bg-red-500/15 text-red-400" : "bg-orange-500/15 text-orange-400")}>
-                    <Factory size={16} />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">{p.name}</div>
-                    <div className="text-[11px] text-[var(--muted)] mb-1">Tightest month: {worst.month} · {formatNumber(p.monthlyCapacity)} units/mo capacity</div>
-                    <span className={cx("inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium", ACTION_TONE_CLASSES[worst.action.tone])}>
-                      {worst.action.label}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+        <div className="overflow-x-auto -mx-5">
+          <table className="w-full text-sm min-w-[720px]">
+            <thead>
+              <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
+                <th className="py-2 px-5 font-medium">SKU</th>
+                <th className="py-2 px-2 font-medium">Tightest month</th>
+                <th className="py-2 px-2 font-medium text-right">Monthly capacity</th>
+                <th className="py-2 px-2 font-medium text-right">Peak load</th>
+                <th className="py-2 px-2 font-medium">Recommended action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {DEMAND_PLANS.filter((p) => p.months.some((m) => m.action.tone !== "ok"))
+                .sort((a, b) => Math.max(...b.months.map((m) => m.action.pct)) - Math.max(...a.months.map((m) => m.action.pct)))
+                .map((p) => {
+                  const worst = p.months.reduce((max, m) => (m.action.pct > max.action.pct ? m : max), p.months[0]);
+                  return (
+                    <tr key={p.sku} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
+                      <td className="py-2.5 px-5">
+                        <span className="flex items-center gap-2">
+                          <span className={cx("h-7 w-7 rounded-lg flex items-center justify-center shrink-0", worst.action.tone === "danger" ? "bg-red-500/15 text-red-400" : "bg-orange-500/15 text-orange-400")}>
+                            <Factory size={14} />
+                          </span>
+                          <span className="font-medium">{p.name}</span>
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2 text-[var(--muted)]">{worst.month}</td>
+                      <td className="py-2.5 px-2 text-right">{formatNumber(p.monthlyCapacity)}/mo</td>
+                      <td className={cx("py-2.5 px-2 text-right font-medium", worst.action.tone === "danger" ? "text-[var(--danger)]" : "text-[var(--warning)]")}>{worst.action.pct}%</td>
+                      <td className="py-2.5 px-2">
+                        <span className={cx("inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium", ACTION_TONE_CLASSES[worst.action.tone])}>
+                          {worst.action.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
         </div>
       </Card>
     </div>

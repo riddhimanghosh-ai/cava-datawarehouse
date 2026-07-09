@@ -109,40 +109,56 @@ export default function ScmPage() {
         {osaRows.length === 0 ? (
           <p className="text-sm text-[var(--muted)] py-6 text-center">No listings match this filter.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {osaRows.slice(0, 9).map((r) => {
-              const product = PRODUCTS.find((p) => p.sku === r.sku)!;
-              const recent = r.dailySeries.slice(-6);
-              return (
-                <div key={`${r.sku}-${r.channel}`} className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
-                  <div className="flex items-start gap-3 mb-2">
-                    <SwatchDot color={product.heroColor} />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium leading-tight truncate">{r.name}</div>
-                      <div className="text-[11px] text-[var(--muted)] mt-0.5">{r.channel}</div>
-                    </div>
-                    <Badge tone={r.priority}>{r.priority}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-[var(--muted)] mb-2">
-                    <span>7d OSA: <span className="text-[var(--foreground)] font-semibold">{r.last7DayOsa}%</span> · 15d: {r.last15DayOsa}%</span>
-                    <Badge tone={r.trend}>{r.trend}</Badge>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {recent.map((v, i) => (
-                      <span
-                        key={i}
-                        className={cx(
-                          "flex-1 text-center rounded py-1 text-[10px] font-medium",
-                          v < 55 ? "bg-red-500/15 text-red-400" : v < 72 ? "bg-orange-500/15 text-orange-400" : v < 85 ? "bg-amber-500/15 text-amber-400" : "bg-emerald-500/15 text-emerald-400"
-                        )}
-                      >
-                        {v.toFixed(0)}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="overflow-x-auto -mx-5">
+            <table className="w-full text-sm min-w-[860px]">
+              <thead>
+                <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
+                  <th className="py-2 px-5 font-medium">SKU</th>
+                  <th className="py-2 px-2 font-medium">Channel</th>
+                  <th className="py-2 px-2 font-medium">Priority</th>
+                  <th className="py-2 px-2 font-medium text-right">7-day OSA</th>
+                  <th className="py-2 px-2 font-medium text-right">15-day OSA</th>
+                  <th className="py-2 px-2 font-medium">Trend</th>
+                  <th className="py-2 px-2 font-medium">Last 6 days</th>
+                </tr>
+              </thead>
+              <tbody>
+                {osaRows.map((r) => {
+                  const product = PRODUCTS.find((p) => p.sku === r.sku)!;
+                  const recent = r.dailySeries.slice(-6);
+                  return (
+                    <tr key={`${r.sku}-${r.channel}`} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
+                      <td className="py-2.5 px-5">
+                        <div className="flex items-center gap-2.5">
+                          <SwatchDot color={product.heroColor} size={22} />
+                          <span className="font-medium truncate">{r.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-2 text-[var(--muted)]">{r.channel}</td>
+                      <td className="py-2.5 px-2"><Badge tone={r.priority}>{r.priority}</Badge></td>
+                      <td className="py-2.5 px-2 text-right font-semibold">{r.last7DayOsa}%</td>
+                      <td className="py-2.5 px-2 text-right text-[var(--muted)]">{r.last15DayOsa}%</td>
+                      <td className="py-2.5 px-2"><Badge tone={r.trend}>{r.trend}</Badge></td>
+                      <td className="py-2.5 px-2">
+                        <div className="flex items-center gap-1 w-40">
+                          {recent.map((v, i) => (
+                            <span
+                              key={i}
+                              className={cx(
+                                "flex-1 text-center rounded py-1 text-[10px] font-medium",
+                                v < 55 ? "bg-red-500/15 text-red-400" : v < 72 ? "bg-orange-500/15 text-orange-400" : v < 85 ? "bg-amber-500/15 text-amber-400" : "bg-emerald-500/15 text-emerald-400"
+                              )}
+                            >
+                              {v.toFixed(0)}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </Card>

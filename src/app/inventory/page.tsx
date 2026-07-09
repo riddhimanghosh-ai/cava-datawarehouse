@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Boxes, Calendar, Layers, PackageCheck, Store, TrendingDown } from "lucide-react";
 import { Card, CardHeader, StatCard, Badge, ProgressBar, Pills, MultiSelect, passesFilter, FilterRow, FilterBox, SwatchDot, IconTile } from "@/components/ui";
 import { formatINR, formatNumber, cx } from "@/lib/format";
-import { CHANNELS, INVENTORY, InventoryRow, inventorySummary, PRODUCTS } from "@/lib/data";
+import { CHANNELS, INVENTORY, inventorySummary, PRODUCTS } from "@/lib/data";
 
 const STATUS_TABS: { value: "attention" | "All"; label: string }[] = [
   { value: "attention", label: "Needs attention" },
@@ -62,74 +62,97 @@ export default function InventoryPage() {
             <p className="text-sm text-[var(--muted)]">Nothing needs attention on this filter — all listings are healthy.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {rows.map((r) => (
-              <InventoryCard key={`${r.sku}-${r.channel}`} row={r} />
-            ))}
+          <div className="overflow-x-auto -mx-5">
+            <table className="w-full text-sm min-w-[920px]">
+              <thead>
+                <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
+                  <th className="py-2 px-5 font-medium">SKU</th>
+                  <th className="py-2 px-2 font-medium">Channel</th>
+                  <th className="py-2 px-2 font-medium">Status</th>
+                  <th className="py-2 px-2 font-medium w-40">Days of cover</th>
+                  <th className="py-2 px-2 font-medium text-right">On hand</th>
+                  <th className="py-2 px-2 font-medium text-right">Daily sales</th>
+                  <th className="py-2 px-2 font-medium text-right">Sell-through</th>
+                  <th className="py-2 px-2 font-medium">Pipeline</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const product = PRODUCTS.find((p) => p.sku === r.sku)!;
+                  const coverPct = Math.min(100, (r.daysOfCover / 90) * 100);
+                  const tone = r.daysOfCover < 12 ? "danger" : r.daysOfCover > 60 ? "ok" : "accent";
+                  return (
+                    <tr key={`${r.sku}-${r.channel}`} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
+                      <td className="py-2.5 px-5">
+                        <div className="flex items-center gap-2.5">
+                          <SwatchDot color={product.heroColor} size={22} />
+                          <div className="min-w-0">
+                            <div className="font-medium truncate">{r.name}</div>
+                            <div className="text-[11px] text-[var(--muted)]">{r.sku} · {r.warehouse.split(" ")[0]}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-2 text-[var(--muted)]">{r.channel}</td>
+                      <td className="py-2.5 px-2"><Badge tone={r.status}>{r.status}</Badge></td>
+                      <td className="py-2.5 px-2">
+                        <div className="flex items-center gap-2">
+                          <span className={cx("w-10 text-right", r.daysOfCover < 12 && "text-[var(--danger)] font-medium")}>{r.daysOfCover}d</span>
+                          <ProgressBar pct={coverPct} tone={tone} />
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-2 text-right">{formatNumber(r.onHand)}</td>
+                      <td className="py-2.5 px-2 text-right">{r.avgDailySales}/day</td>
+                      <td className="py-2.5 px-2 text-right">{r.sellThroughPct}%</td>
+                      <td className="py-2.5 px-2 text-[var(--muted)] text-xs">
+                        {r.incoming > 0 ? `${formatNumber(r.incoming)} in ${r.incomingEta}` : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </Card>
 
       <Card>
         <CardHeader title="Reorder recommendations" subtitle="Auto-generated from sell-through velocity vs. on-hand cover" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {INVENTORY.filter((r) => r.status === "critical").slice(0, 6).map((r) => {
-            const product = PRODUCTS.find((p) => p.sku === r.sku)!;
-            const suggestedQty = Math.round(r.avgDailySales * 30);
-            return (
-              <div key={`${r.sku}-${r.channel}-reco`} className="flex gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
-                <IconTile icon={<TrendingDown size={16} />} tone="danger" />
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="font-medium text-sm">{r.name}</div>
-                    <Badge tone="critical">critical</Badge>
-                  </div>
-                  <div className="text-xs text-[var(--muted)] mb-2">{r.channel} · {r.daysOfCover}d cover left · {r.warehouse}</div>
-                  <div className="text-sm">
-                    Order <span className="font-semibold text-[var(--accent)]">{formatNumber(suggestedQty)} units</span> now to avoid stockout before restock lands ({r.incomingEta}) · est. cost {formatINR(suggestedQty * product.cost, true)}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="overflow-x-auto -mx-5">
+          <table className="w-full text-sm min-w-[860px]">
+            <thead>
+              <tr className="text-left text-[var(--muted)] text-xs border-b border-[var(--border)]">
+                <th className="py-2 px-5 font-medium">SKU</th>
+                <th className="py-2 px-2 font-medium">Channel</th>
+                <th className="py-2 px-2 font-medium text-right">Cover left</th>
+                <th className="py-2 px-2 font-medium text-right">Suggested qty</th>
+                <th className="py-2 px-2 font-medium text-right">Est. cost</th>
+                <th className="py-2 px-2 font-medium">Restock ETA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {INVENTORY.filter((r) => r.status === "critical").slice(0, 8).map((r) => {
+                const product = PRODUCTS.find((p) => p.sku === r.sku)!;
+                const suggestedQty = Math.round(r.avgDailySales * 30);
+                return (
+                  <tr key={`${r.sku}-${r.channel}-reco`} className="border-b border-[var(--border)]/60 hover:bg-[var(--surface-2)]/60">
+                    <td className="py-2.5 px-5">
+                      <span className="flex items-center gap-2">
+                        <IconTile icon={<TrendingDown size={14} />} tone="danger" />
+                        <span className="font-medium">{r.name}</span>
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-2 text-[var(--muted)]">{r.channel}</td>
+                    <td className="py-2.5 px-2 text-right text-[var(--danger)] font-medium">{r.daysOfCover}d</td>
+                    <td className="py-2.5 px-2 text-right font-semibold text-[var(--accent)]">{formatNumber(suggestedQty)} units</td>
+                    <td className="py-2.5 px-2 text-right">{formatINR(suggestedQty * product.cost, true)}</td>
+                    <td className="py-2.5 px-2 text-[var(--muted)]">{r.incoming > 0 ? `lands in ${r.incomingEta}` : "not scheduled"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </Card>
-    </div>
-  );
-}
-
-function InventoryCard({ row }: { row: InventoryRow }) {
-  const product = PRODUCTS.find((p) => p.sku === row.sku)!;
-  const coverPct = Math.min(100, (row.daysOfCover / 90) * 100);
-  const tone = row.daysOfCover < 12 ? "danger" : row.daysOfCover > 60 ? "ok" : "accent";
-
-  return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
-      <div className="flex items-start gap-3 mb-3">
-        <SwatchDot color={product.heroColor} />
-        <div className="min-w-0 flex-1">
-          <div className="font-medium text-sm leading-tight truncate">{row.name}</div>
-          <div className="text-[11px] text-[var(--muted)] mt-0.5">{row.channel} · {row.sku}</div>
-        </div>
-        <Badge tone={row.status}>{row.status}</Badge>
-      </div>
-
-      <div className="flex items-center justify-between text-xs text-[var(--muted)] mb-1">
-        <span className={cx(row.daysOfCover < 12 && "text-[var(--danger)] font-medium")}>{row.daysOfCover}d of cover</span>
-        <span>{formatNumber(row.onHand)} on hand · {row.avgDailySales}/day</span>
-      </div>
-      <ProgressBar pct={coverPct} tone={tone} />
-
-      <div className="flex items-center justify-between mt-3 text-xs">
-        <div className="flex items-center gap-1.5 text-[var(--muted)]">
-          {row.status === "critical" || row.status === "low" ? (
-            row.incoming > 0 ? `${formatNumber(row.incoming)} incoming in ${row.incomingEta}` : "No restock scheduled"
-          ) : (
-            `${row.sellThroughPct}% sell-through`
-          )}
-        </div>
-        <span className="text-[var(--muted)]">{row.warehouse.split(" ")[0]}</span>
-      </div>
     </div>
   );
 }

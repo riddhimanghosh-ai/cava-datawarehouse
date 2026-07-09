@@ -3,8 +3,6 @@
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
   CartesianGrid,
   Cell,
   Pie,
@@ -14,7 +12,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Card, CardHeader, StatCard, Badge } from "@/components/ui";
+import { AlertTriangle, ArrowDownRight, Boxes, Flame, PackageX, TrendingUp, Wallet } from "lucide-react";
+import { Card, CardHeader, StatCard, Badge, IconTile, RingProgress } from "@/components/ui";
 import { formatINR, formatPct } from "@/lib/format";
 import {
   CHANNEL_COLORS,
@@ -131,12 +130,22 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader title="Inventory health" subtitle="Across all channel-SKU listings" />
-          <div className="space-y-2.5">
-            <Row label="Critical (stockout <5 days)" value={inv.critical} tone="critical" />
-            <Row label="Low stock (5–12 days)" value={inv.low} tone="low" />
-            <Row label="Healthy" value={inv.healthy} tone="healthy" />
-            <Row label="Overstocked" value={inv.overstock} tone="overstock" />
-            <Row label="Excess / aging 75d+" value={inv.excess} tone="excess-aging" />
+          <div className="flex items-center gap-4 mb-4">
+            <RingProgress
+              pct={(inv.healthy / inv.total) * 100}
+              size={64}
+              tone="ok"
+              label={`${Math.round((inv.healthy / inv.total) * 100)}%`}
+            />
+            <div className="text-xs text-[var(--muted)]">
+              <span className="text-[var(--foreground)] font-semibold">{inv.healthy}</span> of {inv.total} listings are at a healthy stock level. The rest need action below.
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <MiniStat icon={<PackageX size={15} />} tone="danger" value={inv.critical} label="Critical" />
+            <MiniStat icon={<AlertTriangle size={15} />} tone="default" value={inv.low} label="Low stock" />
+            <MiniStat icon={<Boxes size={15} />} tone="default" value={inv.overstock} label="Overstocked" />
+            <MiniStat icon={<Boxes size={15} />} tone="danger" value={inv.excess} label="Excess/aging" />
           </div>
           <div className="mt-4 pt-4 border-t border-[var(--border)] text-xs text-[var(--muted)] space-y-1">
             <div>Capital stuck in excess stock: <span className="text-[var(--foreground)] font-semibold">{formatINR(inv.capitalStuck, true)}</span></div>
@@ -146,71 +155,53 @@ export default function OverviewPage() {
 
         <Card>
           <CardHeader title="Cash flow snapshot" subtitle="Receivables, payables & runway" />
-          <div className="space-y-2.5">
-            <Row label="Total receivables" value={formatINR(cash.totalReceivables, true)} tone="on-time" plain />
-            <Row label="Total payables due" value={formatINR(cash.totalPayables, true)} tone="delayed" plain />
-            <Row label="Avg monthly outflow" value={formatINR(cash.avgMonthlyOutflow, true)} tone="medium" plain />
+          <div className="flex items-center gap-4 mb-4">
+            <IconTile icon={<Wallet size={18} />} tone="accent" />
+            <div>
+              <div className="text-xs text-[var(--muted)]">Estimated runway at current burn</div>
+              <div className="text-xl font-bold">{cash.runwayMonths.toFixed(1)} months</div>
+            </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-[var(--border)]">
-            <div className="text-xs text-[var(--muted)] mb-1">Estimated runway at current burn</div>
-            <div className="text-xl font-bold">{cash.runwayMonths.toFixed(1)} months</div>
+          <div className="grid grid-cols-2 gap-2.5 text-sm">
+            <div className="rounded-lg bg-[var(--surface-2)] px-3 py-2.5">
+              <div className="text-[11px] text-[var(--muted)]">Receivables</div>
+              <div className="font-semibold">{formatINR(cash.totalReceivables, true)}</div>
+            </div>
+            <div className="rounded-lg bg-[var(--surface-2)] px-3 py-2.5">
+              <div className="text-[11px] text-[var(--muted)]">Payables due</div>
+              <div className="font-semibold">{formatINR(cash.totalPayables, true)}</div>
+            </div>
+          </div>
+          <div className="mt-2.5 rounded-lg bg-[var(--surface-2)] px-3 py-2.5 text-sm">
+            <div className="text-[11px] text-[var(--muted)]">Avg monthly outflow</div>
+            <div className="font-semibold">{formatINR(cash.avgMonthlyOutflow, true)}</div>
           </div>
         </Card>
 
         <Card>
           <CardHeader title="Marketing pulse" subtitle="This week" />
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[var(--muted)]">Ad campaigns scaling</span>
-              <Badge tone="scaling">{`${scalingAds} scaling`}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[var(--muted)]">Campaigns needing action</span>
-              <Badge tone="paused-recommended">{`${fatiguedAds} fatigued`}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[var(--muted)]">Reels gone viral</span>
-              <Badge tone="viral">{`${viralReels} viral`}</Badge>
-            </div>
-            <div className="pt-2 border-t border-[var(--border)] text-xs text-[var(--muted)]">
-              Fastest-growing competitor: <span className="text-[var(--foreground)] font-medium">{topGrowthCompetitor.name}</span> ({formatPct(topGrowthCompetitor.igGrowthPct30d)} IG growth, 30d)
-            </div>
+          <div className="grid grid-cols-3 gap-2.5 mb-3">
+            <MiniStat icon={<TrendingUp size={15} />} tone="ok" value={scalingAds} label="Scaling ads" />
+            <MiniStat icon={<ArrowDownRight size={15} />} tone="danger" value={fatiguedAds} label="Need action" />
+            <MiniStat icon={<Flame size={15} />} tone="accent" value={viralReels} label="Viral reels" />
+          </div>
+          <div className="rounded-lg bg-[var(--surface-2)] px-3 py-2.5 text-xs text-[var(--muted)]">
+            Fastest-growing competitor: <span className="text-[var(--foreground)] font-medium">{topGrowthCompetitor.name}</span> — {formatPct(topGrowthCompetitor.igGrowthPct30d)} IG growth (30d)
           </div>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader title="Revenue by channel — last 30 days" />
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={byChannel} layout="vertical" margin={{ left: 20 }}>
-            <CartesianGrid stroke="var(--border)" horizontal={false} />
-            <XAxis type="number" tick={{ fill: "var(--muted)", fontSize: 11 }} tickFormatter={(v) => formatINR(v, true)} axisLine={false} tickLine={false} />
-            <YAxis type="category" dataKey="channel" tick={{ fill: "var(--foreground)", fontSize: 12 }} axisLine={false} tickLine={false} width={110} />
-            <Tooltip
-              contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12 }}
-              formatter={(v) => formatINR(Number(v))}
-            />
-            <Bar dataKey="revenue" radius={[0, 6, 6, 0]}>
-              {byChannel.map((c) => (
-                <Cell key={c.channel} fill={CHANNEL_COLORS[c.channel]} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </Card>
     </div>
   );
 }
 
-function Row({ label, value, tone, plain }: { label: string; value: number | string; tone: string; plain?: boolean }) {
+function MiniStat({ icon, value, label, tone }: { icon: React.ReactNode; value: number; label: string; tone: "danger" | "ok" | "accent" | "default" }) {
   return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-[var(--muted)]">{label}</span>
-      {plain ? (
-        <span className="font-semibold">{value}</span>
-      ) : (
-        <Badge tone={tone}>{`${value}`}</Badge>
-      )}
+    <div className="flex items-center gap-2.5 rounded-lg bg-[var(--surface-2)] px-3 py-2.5">
+      <IconTile icon={icon} tone={tone} />
+      <div>
+        <div className="text-base font-bold leading-none">{value}</div>
+        <div className="text-[11px] text-[var(--muted)] leading-none mt-1">{label}</div>
+      </div>
     </div>
   );
 }

@@ -102,3 +102,89 @@ export function ProgressBar({ pct, tone = "accent" }: { pct: number; tone?: "acc
     </div>
   );
 }
+
+export function SwatchDot({ color, size = 30 }: { color: string; size?: number }) {
+  return (
+    <span
+      className="rounded-full border border-white/10 shrink-0"
+      style={{ width: size, height: size, background: color }}
+    />
+  );
+}
+
+export function RingProgress({
+  pct,
+  size = 56,
+  stroke = 6,
+  tone = "accent",
+  label,
+}: {
+  pct: number;
+  size?: number;
+  stroke?: number;
+  tone?: "accent" | "danger" | "ok" | "warning";
+  label?: string;
+}) {
+  const clamped = Math.min(100, Math.max(0, pct));
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const offset = c - (clamped / 100) * c;
+  const color =
+    tone === "danger" ? "var(--danger)" : tone === "ok" ? "var(--ok)" : tone === "warning" ? "var(--warning)" : "var(--accent)";
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="var(--surface-2)" strokeWidth={stroke} fill="none" />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke={color}
+          strokeWidth={stroke}
+          fill="none"
+          strokeDasharray={c}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+        />
+      </svg>
+      {label && (
+        <div className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold">{label}</div>
+      )}
+    </div>
+  );
+}
+
+export function IconTile({ icon, tone = "default" }: { icon: ReactNode; tone?: "default" | "danger" | "ok" | "accent" }) {
+  const bg =
+    tone === "danger" ? "bg-red-500/15 text-red-400" : tone === "ok" ? "bg-emerald-500/15 text-emerald-400" : tone === "accent" ? "bg-[var(--accent)]/15 text-[var(--accent)]" : "bg-[var(--surface-2)] text-[var(--muted)]";
+  return <div className={cx("h-9 w-9 rounded-xl flex items-center justify-center shrink-0", bg)}>{icon}</div>;
+}
+
+export function Pills<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          onClick={() => onChange(o.value)}
+          className={cx(
+            "rounded-full px-3 py-1 text-xs font-medium capitalize border transition-colors",
+            value === o.value
+              ? "bg-[var(--accent)] text-black border-[var(--accent)]"
+              : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--foreground)]/30"
+          )}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
